@@ -1,26 +1,4 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
-from rag_pipeline import answer_question
-import uvicorn
-import os
-import json
-import base64
-import google.generativeai as genai
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = FastAPI()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    return """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -259,13 +237,11 @@ async def home():
             display: flex;
             gap: 30px;
             z-index: 10;
-            align-items: center;
         }
 
-        /* Standard round button for close */
-        .close-btn {
-            width: 50px;
-            height: 50px;
+        .sphere-btn {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: rgba(26, 26, 26, 0.8);
             border: 1px solid #2a2a2a;
@@ -274,66 +250,21 @@ async def home():
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-            color: #fff;
-            font-size: 20px;
+            color: #00ffff;
+            font-size: 24px;
+            backdrop-filter: blur(5px);
         }
 
-        .close-btn:hover {
+        .sphere-btn:hover {
             background: rgba(37, 37, 37, 0.9);
-            border-color: #ff4444;
-            color: #ff4444;
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
-        /* New Waveform Button */
-        .wave-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 18px;
-            /* Rounded square */
-            background: #26c6da;
-            /* Cyan color from image */
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(38, 198, 218, 0.3);
-        }
-
-        .wave-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(38, 198, 218, 0.5);
-        }
-
-        .wave-btn.active {
-            background: #00e5ff;
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .wave-icon {
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: #000;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+        .sphere-btn.active {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
         }
 
         /* Scrollbar */
@@ -412,16 +343,8 @@ async def home():
         <div class="particle-panel">
             <div id="canvas-container"></div>
             <div class="sphere-controls">
-                <div class="close-btn" onclick="closeApp()">✕</div>
-                <div class="wave-btn" id="micBtn" onclick="toggleVoice()">
-                    <svg class="wave-icon" viewBox="0 0 24 24">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="8" y1="9" x2="8" y2="15"></line>
-                        <line x1="16" y1="9" x2="16" y2="15"></line>
-                        <line x1="4" y1="11" x2="4" y2="13"></line>
-                        <line x1="20" y1="11" x2="20" y2="13"></line>
-                    </svg>
-                </div>
+                <div class="sphere-btn" onclick="closeApp()">✕</div>
+                <div class="sphere-btn" id="micBtn" onclick="toggleVoice()">🎤</div>
             </div>
         </div>
     </div>
@@ -652,6 +575,9 @@ async def home():
 
                 if (isVoice && isListening) {
                     updateStatus('Speaking...');
+                    // We can simulate visual activity during speaking if needed
+                    // For now, the visualizer reacts to the USER'S voice via mic
+                    // To react to BOT'S voice, we'd need to connect the audio output to analyzer
                     await speakResponse(answer);
                     updateStatus('Listening...');
                 } else {
@@ -675,6 +601,10 @@ async def home():
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
+
+                // Optional: Connect bot audio to visualizer
+                // This would require creating a MediaElementSource from the audio element
+                // and connecting it to the same analyser
 
                 await audio.play();
 
@@ -713,10 +643,4 @@ async def home():
     </script>
 </body>
 
-</html>"""
-
-if __name__ == "__main__":
-    print("🚀 Starting Uni Bot AI Assistant...")
-    print("📱 Open your browser and go to: http://localhost:8000")
-    print("🎤 Use voice or 💬 type your questions!")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+</html>

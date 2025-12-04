@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS - AI Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        /* Particle Sphere Canvas */
+        #particleSphere {
+            width: 400px;
+            height: 400px;
+            margin-bottom: 60px;
+        }
+        
+        /* Status Text */
+        .status-text {
+            font-size: 24px;
+            font-weight: 300;
+            color: #00ffff;
+            margin-bottom: 80px;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+        
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #00ffff;
+            font-size: 24px;
+        }
+        
+        .control-btn:hover {
+            background: #252525;
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .control-btn.active {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        /* Hidden chat for text mode */
+        .chat-container {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            border-top: 1px solid #333;
+            padding: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        
+        .chat-container.active {
+            display: block;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #004444;
+            color: #00ffff;
+            margin-right: auto;
+        }
+        
+        .input-area {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: none;
+            gap: 10px;
+        }
+        
+        .input-area.active {
+            display: flex;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 25px;
+            color: #00ffff;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #00ffff;
+            border: none;
+            color: #000;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="particleSphere"></canvas>
+        <div class="status-text" id="statusText">Say something...</div>
+        <div class="controls">
+            <div class="control-btn" id="closeBtn" onclick="closeApp()">✕</div>
+            <div class="control-btn" id="micBtn" onclick="toggleVoice()">🎤</div>
+        </div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-area" id="inputArea">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+    <script>
+        // Particle Sphere Animation (Comet-style)
+        const canvas = document.getElementById('particleSphere');
+        const ctx = canvas.getContext('2d');
+        const statusText = document.getElementById('statusText');
+        const micBtn = document.getElementById('micBtn');
+        
+        // Set canvas size
+        canvas.width = 400;
+        canvas.height = 400;
+        
+        // Particle system
+        const particles = [];
+        const numParticles = 800;
+        const radius = 150;
+        let rotation = 0;
+        let particleSpeed = 0.002;
+        let particleSize = 1.5;
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                this.x = radius * Math.sin(phi) * Math.cos(theta);
+                this.y = radius * Math.sin(phi) * Math.sin(theta);
+                this.z = radius * Math.cos(phi);
+                
+                this.originalX = this.x;
+                this.originalY = this.y;
+                this.originalZ = this.z;
+            }
+            
+            update() {
+                // Rotate
+                const cos = Math.cos(particleSpeed);
+                const sin = Math.sin(particleSpeed);
+                
+                const x1 = this.x * cos - this.z * sin;
+                const z1 = this.z * cos + this.x * sin;
+                
+                this.x = x1;
+                this.z = z1;
+            }
+            
+            draw() {
+                const scale = 200 / (200 + this.z);
+                const x2d = this.x * scale + canvas.width / 2;
+                const y2d = this.y * scale + canvas.height / 2;
+                const size = particleSize * scale;
+                
+                const opacity = (this.z + radius) / (radius * 2);
+                ctx.fillStyle = `rgba(0, 255, 255, ${opacity * 0.8})`;
+                ctx.beginPath();
+                ctx.arc(x2d, y2d, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Initialize particles
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle());
+        }
+        
+        // Animation states
+        let animationState = 'idle'; // idle, listening, speaking
+        
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update animation based on state
+            if (animationState === 'listening') {
+                particleSpeed = 0.005;
+                particleSize = 2;
+            } else if (animationState === 'speaking') {
+                particleSpeed = 0.008;
+                particleSize = 2.5 + Math.sin(Date.now() * 0.01) * 0.5;
+            } else {
+                particleSpeed = 0.002;
+                particleSize = 1.5;
+            }
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            rotation += particleSpeed;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Voice control
+        let voiceActive = false;
+        let recognition = null;
+        
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            
+            recognition.onresult = async function(event) {
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                await getResponse(transcript, true);
+            };
+        }
+        
+        function toggleVoice() {
+            voiceActive = !voiceActive;
+            
+            if (voiceActive) {
+                micBtn.classList.add('active');
+                statusText.textContent = 'Listening...';
+                animationState = 'listening';
+                if (recognition) recognition.start();
+            } else {
+                micBtn.classList.remove('active');
+                statusText.textContent = 'Say something...';
+                animationState = 'idle';
+                if (recognition) recognition.stop();
+            }
+        }
+        
+        async function getResponse(question, isVoice) {
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                
+                const data = await response.json();
+                const answer = data.answer;
+                
+                if (isVoice && voiceActive) {
+                    statusText.textContent = 'Speaking...';
+                    animationState = 'speaking';
+                    await speakResponse(answer);
+                    statusText.textContent = 'Listening...';
+                    animationState = 'listening';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function speakResponse(text) {
+            try {
+                const response = await fetch('/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                await audio.play();
+                
+                return new Promise(resolve => {
+                    audio.onended = () => resolve();
+                });
+            } catch (error) {
+                console.error('Speech error:', error);
+            }
+        }
+        
+        function closeApp() {
+            if (confirm('Close JARVIS?')) {
+                window.close();
+            }
+        }
+        
+        function sendMessage() {
+            // For text chat mode (future enhancement)
+        }
+    </script>
+</body>
+</html>
