@@ -21,7 +21,7 @@ async def home():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Uni Bot - Live Voice Assistant</title>
+        <title>Uni Bot - AI Assistant</title>
         <style>
             * {
                 margin: 0;
@@ -31,64 +31,106 @@ async def home():
             
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #1a1a1a;
                 min-height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                color: #fff;
                 padding: 20px;
             }
             
-            .container {
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                max-width: 600px;
-                width: 100%;
-                padding: 40px;
+            .header {
                 text-align: center;
-            }
-            
-            h1 {
-                color: #667eea;
-                margin-bottom: 10px;
-                font-size: 2.5em;
-            }
-            
-            .subtitle {
-                color: #666;
                 margin-bottom: 30px;
+            }
+            
+            .header h1 {
+                color: #667eea;
+                font-size: 2.5em;
+                margin-bottom: 10px;
+            }
+            
+            .header p {
+                color: #888;
                 font-size: 1.1em;
             }
             
-            .conversation-area {
-                background: #f8f9fa;
-                border-radius: 15px;
+            .main-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            
+            .section {
+                background: #2a2a2a;
+                border-radius: 20px;
                 padding: 30px;
-                margin-bottom: 20px;
-                min-height: 300px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                min-height: 600px;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+            }
+            
+            .section-header {
+                display: flex;
                 align-items: center;
+                gap: 15px;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #3a3a3a;
+            }
+            
+            .section-icon {
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5em;
+            }
+            
+            .section-title {
+                flex: 1;
+            }
+            
+            .section-title h2 {
+                color: #fff;
+                font-size: 1.5em;
+                margin-bottom: 5px;
+            }
+            
+            .section-title p {
+                color: #888;
+                font-size: 0.9em;
+            }
+            
+            /* Voice Assistant Section */
+            .voice-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
             
             .avatar {
-                width: 120px;
-                height: 120px;
+                width: 150px;
+                height: 150px;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 3em;
-                margin-bottom: 20px;
+                font-size: 4em;
+                margin-bottom: 30px;
                 transition: all 0.3s ease;
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
             }
             
             .avatar.listening {
-                animation: pulse 1.5s infinite;
-                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+                animation: pulse 2s infinite;
             }
             
             .avatar.speaking {
@@ -96,174 +138,311 @@ async def home():
             }
             
             @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.05); }
+                0% { 
+                    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+                }
+                70% {
+                    box-shadow: 0 0 0 30px rgba(102, 126, 234, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+                }
             }
             
             @keyframes wave {
-                0%, 100% { transform: scale(1) rotate(0deg); }
-                25% { transform: scale(1.05) rotate(-5deg); }
-                75% { transform: scale(1.05) rotate(5deg); }
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
             }
             
-            .status {
-                font-size: 1.2em;
+            .voice-status {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            
+            .voice-status h3 {
                 color: #667eea;
-                font-weight: bold;
+                font-size: 1.3em;
                 margin-bottom: 10px;
             }
             
-            .transcript {
-                background: white;
-                border-radius: 10px;
-                padding: 15px;
-                margin-top: 20px;
-                max-height: 200px;
-                overflow-y: auto;
-                text-align: left;
+            .voice-status p {
+                color: #aaa;
             }
             
-            .transcript-line {
-                margin-bottom: 10px;
-                padding: 8px;
-                border-radius: 5px;
-            }
-            
-            .user-line {
-                background: #e3f2fd;
-                margin-left: 20px;
-            }
-            
-            .bot-line {
-                background: #f3e5f5;
-                margin-right: 20px;
-            }
-            
-            button {
-                padding: 20px 40px;
+            .voice-button {
+                padding: 18px 45px;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
                 border: none;
                 border-radius: 50px;
-                font-size: 1.2em;
+                font-size: 1.1em;
                 font-weight: bold;
                 cursor: pointer;
-                transition: transform 0.2s, box-shadow 0.2s;
+                transition: all 0.3s;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             }
             
-            button:hover {
+            .voice-button:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
             }
             
-            button:active {
-                transform: translateY(0);
-            }
-            
-            button.active {
+            .voice-button.active {
                 background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
             }
-
-            .input-area {
+            
+            /* Text Chat Section */
+            .chat-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px;
+                background: #1a1a1a;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                min-height: 400px;
+            }
+            
+            .message {
+                margin-bottom: 15px;
+                padding: 12px 18px;
+                border-radius: 12px;
+                max-width: 85%;
+                animation: fadeIn 0.3s;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .user-message {
+                background: #667eea;
+                color: #fff;
+                margin-left: auto;
+                text-align: right;
+            }
+            
+            .bot-message {
+                background: #3a3a3a;
+                color: #fff;
+                margin-right: auto;
+            }
+            
+            .suggestions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .suggestion-chip {
+                background: #3a3a3a;
+                border: 1px solid #4a4a4a;
+                padding: 8px 15px;
+                border-radius: 20px;
+                font-size: 0.9em;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: #ccc;
+            }
+            
+            .suggestion-chip:hover {
+                background: #667eea;
+                border-color: #667eea;
+                color: #fff;
+                transform: translateY(-2px);
+            }
+            
+            .chat-input-area {
                 display: flex;
                 gap: 10px;
-                margin-top: 20px;
-                width: 100%;
+                align-items: center;
             }
-
-            #textInput {
+            
+            .chat-input {
                 flex: 1;
                 padding: 15px 20px;
-                border: 2px solid #eee;
-                border-radius: 30px;
+                background: #1a1a1a;
+                border: 2px solid #3a3a3a;
+                border-radius: 25px;
+                color: #fff;
                 font-size: 1em;
                 outline: none;
                 transition: border-color 0.3s;
             }
-
-            #textInput:focus {
+            
+            .chat-input:focus {
                 border-color: #667eea;
             }
-
-            #sendButton {
-                padding: 15px 25px;
+            
+            .chat-input::placeholder {
+                color: #666;
+            }
+            
+            .send-button {
+                width: 50px;
+                height: 50px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
                 border-radius: 50%;
+                color: white;
                 font-size: 1.2em;
-                width: 54px;
-                height: 54px;
+                cursor: pointer;
+                transition: all 0.3s;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            }
+            
+            .send-button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6);
+            }
+            
+            /* Shared transcript */
+            .shared-transcript {
+                background: #2a2a2a;
+                border-radius: 15px;
+                padding: 20px;
+                margin-top: 20px;
+                max-width: 1400px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .transcript-header {
+                color: #667eea;
+                font-size: 1.2em;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #3a3a3a;
+            }
+            
+            .transcript-content {
+                max-height: 200px;
+                overflow-y: auto;
+            }
+            
+            .transcript-item {
+                padding: 10px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+                background: #1a1a1a;
+            }
+            
+            .transcript-item strong {
+                color: #667eea;
+            }
+            
+            /* Scrollbar styling */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: #1a1a1a;
+                border-radius: 10px;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: #667eea;
+                border-radius: 10px;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: #764ba2;
+            }
+            
+            /* Responsive */
+            @media (max-width: 1024px) {
+                .main-container {
+                    grid-template-columns: 1fr;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="header">
             <h1>🎓 Uni Bot</h1>
-            <p class="subtitle">Live Voice Assistant</p>
-            
-            <div class="conversation-area">
-                <div class="avatar" id="avatar">🎤</div>
-                <div class="status" id="status">Ready to talk</div>
-                <p id="statusMessage">Click "Start Conversation" to begin</p>
-                
-                <div class="suggestions" id="suggestions">
-                    <div class="suggestion-chip" onclick="askSuggestion('What is the placement process?')">💼 Placement Process</div>
-                    <div class="suggestion-chip" onclick="askSuggestion('How do I apply for scholarships?')">💰 Scholarships</div>
-                    <div class="suggestion-chip" onclick="askSuggestion('What are the hostel rules?')">🏠 Hostel Rules</div>
-                    <div class="suggestion-chip" onclick="askSuggestion('Library timings?')">📚 Library</div>
-                </div>
-
-                <div class="transcript" id="transcript" style="display: none;">
-                    <div class="transcript-line bot-line">
-                        <strong>Assistant:</strong> Hello! Ask me anything about admissions, fees, or university life.
+            <p>Your intelligent university assistant with voice & chat</p>
+        </div>
+        
+        <div class="main-container">
+            <!-- Voice Assistant Section -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">🎤</div>
+                    <div class="section-title">
+                        <h2>Voice Assistant</h2>
+                        <p>Speak naturally to get answers</p>
                     </div>
+                </div>
+                
+                <div class="voice-content">
+                    <div class="avatar" id="avatar">🎤</div>
+                    <div class="voice-status">
+                        <h3 id="voiceStatus">Ready to Listen</h3>
+                        <p id="voiceMessage">Click the button below to start</p>
+                    </div>
+                    <button class="voice-button" id="voiceButton" onclick="toggleVoice()">
+                        Start Voice Chat
+                    </button>
                 </div>
             </div>
             
-            <style>
-                .suggestions {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                    justify-content: center;
-                    margin-top: 20px;
-                    margin-bottom: 10px;
-                }
+            <!-- Text Chat Section -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">💬</div>
+                    <div class="section-title">
+                        <h2>Text Chat</h2>
+                        <p>Type your questions here</p>
+                    </div>
+                </div>
                 
-                .suggestion-chip {
-                    background: #f0f2f5;
-                    border: 1px solid #ddd;
-                    padding: 8px 15px;
-                    border-radius: 20px;
-                    font-size: 0.9em;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    color: #555;
-                }
-                
-                .suggestion-chip:hover {
-                    background: #e3f2fd;
-                    border-color: #667eea;
-                    color: #667eea;
-                    transform: translateY(-2px);
-                }
-            </style>
-            
-            <button id="conversationButton" onclick="toggleConversation()">
-                Start Conversation
-            </button>
-            <div class="input-area">
-                <input type="text" id="textInput" placeholder="Type your question here..." onkeypress="handleKeyPress(event)">
-                <button id="sendButton" onclick="sendText()">➤</button>
+                <div class="chat-content">
+                    <div class="suggestions">
+                        <div class="suggestion-chip" onclick="askSuggestion('What is the placement process?')">💼 Placement</div>
+                        <div class="suggestion-chip" onclick="askSuggestion('How do I apply for scholarships?')">💰 Scholarships</div>
+                        <div class="suggestion-chip" onclick="askSuggestion('What are the hostel rules?')">🏠 Hostel</div>
+                        <div class="suggestion-chip" onclick="askSuggestion('Library timings?')">📚 Library</div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <strong>Assistant:</strong> Hello! Ask me anything about admissions, fees, placements, or university life. 👋
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Ask anything..." onkeypress="handleChatKeyPress(event)">
+                        <button class="send-button" onclick="sendChatMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shared Transcript -->
+        <div class="shared-transcript">
+            <div class="transcript-header">📝 Conversation History</div>
+            <div class="transcript-content" id="sharedTranscript">
+                <div class="transcript-item">
+                    <strong>System:</strong> Ready to assist you via voice or text!
+                </div>
             </div>
         </div>
         
         <script>
             let recognition = null;
-            let isListening = false;
+            let voiceActive = false;
             let currentAudio = null;
-            let conversationActive = false;
             
             // Initialize speech recognition
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -275,15 +454,14 @@ async def home():
                 
                 recognition.onresult = async function(event) {
                     const transcript = event.results[event.results.length - 1][0].transcript;
-                    addToTranscript('You: ' + transcript, 'user');
-                    await getResponse(transcript);
+                    addToTranscript('You (Voice)', transcript);
+                    await getResponse(transcript, true);
                 };
                 
                 recognition.onend = function() {
-                    if (conversationActive) {
-                        // Restart listening if conversation is still active
+                    if (voiceActive) {
                         setTimeout(() => {
-                            if (conversationActive) {
+                            if (voiceActive) {
                                 recognition.start();
                             }
                         }, 500);
@@ -292,70 +470,36 @@ async def home():
                 
                 recognition.onerror = function(event) {
                     console.error('Speech recognition error:', event.error);
-                    if (event.error !== 'no-speech') {
-                        updateStatus('Error: ' + event.error, 'Click "Stop" to end');
-                    }
                 };
             }
             
-            function handleKeyPress(event) {
-                if (event.key === 'Enter') {
-                    sendText();
-                }
-            }
-
-            async function sendText() {
-                const input = document.getElementById('textInput');
-                const text = input.value.trim();
-                
-                if (text) {
-                    input.value = '';
-                    // Ensure conversation is "active" so audio plays
-                    if (!conversationActive) {
-                        toggleConversation(); 
-                    }
-                    addToTranscript('You: ' + text, 'user');
-                    await getResponse(text);
-                }
-            }
-            
-            function toggleConversation() {
-                if (!recognition) {
-                    alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
-                    return;
-                }
-                
-                conversationActive = !conversationActive;
-                const button = document.getElementById('conversationButton');
+            function toggleVoice() {
+                voiceActive = !voiceActive;
+                const button = document.getElementById('voiceButton');
                 const avatar = document.getElementById('avatar');
-                const transcript = document.getElementById('transcript');
+                const status = document.getElementById('voiceStatus');
+                const message = document.getElementById('voiceMessage');
                 
-                if (conversationActive) {
-                    button.textContent = 'Stop Conversation';
+                if (voiceActive) {
+                    button.textContent = 'Stop Voice Chat';
                     button.classList.add('active');
                     avatar.classList.add('listening');
-                    transcript.style.display = 'block';
-                    updateStatus('Listening...', 'I\\'m ready to help! Speak your question.');
-                    recognition.start();
+                    status.textContent = 'Listening...';
+                    message.textContent = 'Speak your question';
+                    if (recognition) recognition.start();
                 } else {
-                    button.textContent = 'Start Conversation';
+                    button.textContent = 'Start Voice Chat';
                     button.classList.remove('active');
                     avatar.classList.remove('listening', 'speaking');
                     avatar.textContent = '🎤';
-                    updateStatus('Ready to talk', 'Click "Start Conversation" to begin');
-                    recognition.stop();
-                    if (currentAudio) {
-                        currentAudio.pause();
-                    }
+                    status.textContent = 'Ready to Listen';
+                    message.textContent = 'Click the button below to start';
+                    if (recognition) recognition.stop();
+                    if (currentAudio) currentAudio.pause();
                 }
             }
             
-            async function getResponse(question) {
-                if (!conversationActive) return;
-                
-                updateStatus('Thinking...', 'Processing your question...');
-                document.getElementById('avatar').classList.remove('listening');
-                
+            async function getResponse(question, isVoice = false) {
                 try {
                     const response = await fetch('/ask', {
                         method: 'POST',
@@ -364,26 +508,33 @@ async def home():
                     });
                     
                     const data = await response.json();
-                    addToTranscript('Assistant: ' + data.answer, 'bot');
+                    const answer = data.answer;
                     
-                    // Speak the response
-                    await speakResponse(data.answer);
+                    addToTranscript('Assistant', answer);
+                    
+                    if (isVoice) {
+                        addChatMessage('bot', answer);
+                    }
+                    
+                    // Speak response if voice is active
+                    if (isVoice && voiceActive) {
+                        await speakResponse(answer);
+                    }
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    addToTranscript('Assistant: Sorry, I had trouble processing that.', 'bot');
-                    if (conversationActive) {
-                        updateStatus('Listening...', 'Ask me anything!');
-                        document.getElementById('avatar').classList.add('listening');
-                    }
+                    addToTranscript('Assistant', 'Sorry, I had trouble processing that.');
                 }
             }
             
             async function speakResponse(text) {
-                if (!conversationActive) return;
-                
-                updateStatus('Speaking...', 'Generating response...');
+                const status = document.getElementById('voiceStatus');
+                const message = document.getElementById('voiceMessage');
                 const avatar = document.getElementById('avatar');
+                
+                status.textContent = 'Speaking...';
+                message.textContent = 'Playing response';
+                avatar.classList.remove('listening');
                 avatar.classList.add('speaking');
                 avatar.textContent = '🔊';
                 
@@ -401,8 +552,9 @@ async def home():
                     
                     currentAudio = new Audio(audioUrl);
                     currentAudio.onended = () => {
-                        if (conversationActive) {
-                            updateStatus('Listening...', 'I\\'m ready for your next question!');
+                        if (voiceActive) {
+                            status.textContent = 'Listening...';
+                            message.textContent = 'Speak your question';
                             avatar.classList.remove('speaking');
                             avatar.classList.add('listening');
                             avatar.textContent = '🎤';
@@ -413,8 +565,9 @@ async def home():
                     
                 } catch (error) {
                     console.error('Speech error:', error);
-                    if (conversationActive) {
-                        updateStatus('Listening...', 'Ask me anything!');
+                    if (voiceActive) {
+                        status.textContent = 'Listening...';
+                        message.textContent = 'Speak your question';
                         avatar.classList.remove('speaking');
                         avatar.classList.add('listening');
                         avatar.textContent = '🎤';
@@ -422,41 +575,54 @@ async def home():
                 }
             }
             
-            function updateStatus(status, message) {
-                document.getElementById('status').textContent = status;
-                document.getElementById('statusMessage').textContent = message;
+            function handleChatKeyPress(event) {
+                if (event.key === 'Enter') {
+                    sendChatMessage();
+                }
             }
             
-            function addToTranscript(text, type) {
-                const transcript = document.getElementById('transcript');
-                const line = document.createElement('div');
-                line.className = 'transcript-line ' + (type === 'user' ? 'user-line' : 'bot-line');
-                // Allow HTML for bot responses to render bullets/bold
-                if (type === 'bot') {
-                    // Convert newlines to <br> for proper formatting
-                    let formattedText = text.replace(/\n/g, '<br>');
-                    // Convert **text** to <strong>text</strong>
-                    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    
-                    line.innerHTML = '<strong>Assistant:</strong> ' + formattedText;
-                } else {
-                    line.innerHTML = '<strong>You:</strong> ' + text.replace('You: ', '');
+            async function sendChatMessage() {
+                const input = document.getElementById('chatInput');
+                const text = input.value.trim();
+                
+                if (text) {
+                    input.value = '';
+                    addChatMessage('user', text);
+                    addToTranscript('You (Text)', text);
+                    await getResponse(text, false);
                 }
-                transcript.appendChild(line);
+            }
+            
+            function addChatMessage(type, text) {
+                const chatMessages = document.getElementById('chatMessages');
+                const message = document.createElement('div');
+                message.className = `message ${type === 'user' ? 'user-message' : 'bot-message'}`;
+                
+                if (type === 'bot') {
+                    // Format bot messages (handle bullets, bold, etc.)
+                    let formattedText = text.replace(/\\n/g, '<br>');
+                    formattedText = formattedText.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');
+                    message.innerHTML = `<strong>${type === 'user' ? 'You' : 'Assistant'}:</strong> ${formattedText}`;
+                } else {
+                    message.innerHTML = `<strong>You:</strong> ${text}`;
+                }
+                
+                chatMessages.appendChild(message);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function addToTranscript(speaker, text) {
+                const transcript = document.getElementById('sharedTranscript');
+                const item = document.createElement('div');
+                item.className = 'transcript-item';
+                item.innerHTML = `<strong>${speaker}:</strong> ${text}`;
+                transcript.appendChild(item);
                 transcript.scrollTop = transcript.scrollHeight;
             }
-
+            
             async function askSuggestion(question) {
-                // If conversation not active, start it
-                if (!conversationActive) {
-                    toggleConversation();
-                }
-                
-                // Add to transcript
-                addToTranscript('You: ' + question, 'user');
-                
-                // Get response
-                await getResponse(question);
+                document.getElementById('chatInput').value = question;
+                sendChatMessage();
             }
         </script>
     </body>
@@ -501,7 +667,7 @@ async def speak(request: Request):
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    print("🚀 Starting Uni Bot Live Voice Assistant...")
+    print("🚀 Starting Uni Bot AI Assistant...")
     print("📱 Open your browser and go to: http://localhost:8000")
-    print("🎤 Click 'Start Conversation' and speak naturally!")
+    print("🎤 Use voice or 💬 type your questions!")
     uvicorn.run(app, host="0.0.0.0", port=8000)
