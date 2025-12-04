@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, JSONResponse
 from rag_pipeline import answer_question
 from elevenlabs import ElevenLabs
 import uvicorn
@@ -7,6 +7,8 @@ import os
 import json
 import base64
 from dotenv import load_dotenv
+import user_storage
+import timetable_extractor
 
 load_dotenv()
 
@@ -427,6 +429,57 @@ async def home():
                     </div>
                 </div>
             </div>
+            
+            <!-- My Timetable Section -->
+            <div class="section" id="timetableSection">
+                <div class="section-header">
+                    <div class="section-icon">📅</div>
+                    <div class="section-title">
+                        <h2>My Timetable</h2>
+                        <p>Upload & manage your schedule</p>
+                    </div>
+                </div>
+                
+                <div class="chat-content">
+                    <!-- Profile Setup (shown if no student ID) -->
+                    <div id="profileSetup" style="display: none;">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">Setup Your Profile</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                            <input type="text" id="studentIdInput" placeholder="Student ID (e.g., 12345678)" class="chat-input" style="margin: 0;">
+                            <input type="text" id="nameInput" placeholder="Your Name" class="chat-input" style="margin: 0;">
+                            <input type="text" id="programInput" placeholder="Program (e.g., B.Tech CSE)" class="chat-input" style="margin: 0;">
+                            <input type="number" id="semesterInput" placeholder="Semester (e.g., 6)" class="chat-input" style="margin: 0;">
+                        </div>
+                        <button onclick="saveProfile()" class="voice-button" style="width: 100%; margin: 0;">
+                            Save Profile
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Display (shown if student ID exists) -->
+                    <div id="profileDisplay" style="display: none;">
+                        <div style="background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="color: #667eea; margin-bottom: 10px;">Profile</h4>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>ID:</strong> <span id="displayStudentId"></span></p>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>Name:</strong> <span id="displayName"></span></p>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>Program:</strong> <span id="displayProgram"></span></p>
+                        </div>
+                        
+                        <!-- Upload Section -->
+                        <div style="margin-bottom: 15px;">
+                            <label for="timetableFile" class="voice-button" style="width: 100%; margin: 0; cursor: pointer; text-align: center;">
+                                📤 Choose Timetable PDF
+                            </label>
+                            <input type="file" id="timetableFile" accept=".pdf" style="display: none;" onchange="handleFileSelect(event)">
+                        </div>
+                        
+                        <div id="uploadStatus" style="padding: 10px; border-radius: 8px; background: #2a2a2a; color: #ccc; text-align: center; display: none;"></div>
+                        
+                        <button onclick="clearProfile()" style="margin-top: 15px; padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%;">
+                            Clear Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Shared Transcript -->
@@ -589,7 +642,30 @@ async def home():
                     input.value = '';
                     addChatMessage('user', text);
                     addToTranscript('You (Text)', text);
-                    await getResponse(text, false);
+                    
+                    // Get response and display in chat
+                    try {
+                        const response = await fetch('/ask', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                question: text,
+                                student_id: currentStudentId
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        const answer = data.answer;
+                        
+                        // Add to both chat and transcript
+                        addChatMessage('bot', answer);
+                        addToTranscript('Assistant', answer);
+                        
+                    } catch (error) {
+                        console.error('Error:', error);
+                        addChatMessage('bot', 'Sorry, I had trouble processing that.');
+                        addToTranscript('Assistant', 'Sorry, I had trouble processing that.');
+                    }
                 }
             }
             
@@ -624,6 +700,173 @@ async def home():
                 document.getElementById('chatInput').value = question;
                 sendChatMessage();
             }
+            
+            // ===== PROFILE & TIMETABLE FUNCTIONS =====
+            let currentStudentId = null;
+            
+            // Initialize on page load
+            window.addEventListener('DOMContentLoaded', function() {
+                loadProfileFromStorage();
+            });
+            
+            function loadProfileFromStorage() {
+                currentStudentId = localStorage.getItem('studentId');
+                
+                if (currentStudentId) {
+                    // Load profile from backend
+                    fetch(`/user_profile/${currentStudentId}`)
+                        .then(res => res.json())
+                        .then(profile => {
+                            if (profile.error) {
+                                showProfileSetup();
+                            } else {
+                                displayProfile(profile);
+                            }
+                        })
+                        .catch(() => showProfileSetup());
+                } else {
+                    showProfileSetup();
+                }
+            }
+            
+            function showProfileSetup() {
+                document.getElementById('profileSetup').style.display = 'block';
+                document.getElementById('profileDisplay').style.display = 'none';
+            }
+            
+            function displayProfile(profile) {
+                document.getElementById('displayStudentId').textContent = profile.student_id;
+                document.getElementById('displayName').textContent = profile.name;
+                document.getElementById('displayProgram').textContent = profile.program;
+                
+                document.getElementById('profileSetup').style.display = 'none';
+                document.getElementById('profileDisplay').style.display = 'block';
+                
+                currentStudentId = profile.student_id;
+            }
+            
+            function saveProfile() {
+                const studentId = document.getElementById('studentIdInput').value.trim();
+                const name = document.getElementById('nameInput').value.trim();
+                const program = document.getElementById('programInput').value.trim();
+                const semester = document.getElementById('semesterInput').value;
+                
+                if (!studentId || !name || !program || !semester) {
+                    alert('Please fill all fields');
+                    return;
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('studentId', studentId);
+                localStorage.setItem('studentName', name);
+                localStorage.setItem('studentProgram', program);
+                localStorage.setItem('studentSemester', semester);
+                
+                // Display profile
+                displayProfile({
+                    student_id: studentId,
+                    name: name,
+                    program: program,
+                    semester: semester
+                });
+                
+                alert('Profile saved! ✅ You can now upload your timetable.');
+            }
+            
+            function clearProfile() {
+                if (confirm('Are you sure you want to clear your profile?')) {
+                    localStorage.removeItem('studentId');
+                    localStorage.removeItem('studentName');
+                    localStorage.removeItem('studentProgram');
+                    localStorage.removeItem('studentSemester');
+                    currentStudentId = null;
+                    showProfileSetup();
+                    
+                    // Clear inputs
+                    document.getElementById('studentIdInput').value = '';
+                    document.getElementById('nameInput').value = '';
+                    document.getElementById('programInput').value = '';
+                    document.getElementById('semesterInput').value = '';
+                }
+            }
+            
+            function handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (file.type !== 'application/pdf') {
+                    alert('Please select a PDF file');
+                    return;
+                }
+                
+                uploadTimetable(file);
+            }
+            
+            async function uploadTimetable(file) {
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#667eea';
+                statusDiv.innerHTML = '⏳ Uploading and processing timetable...';
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('student_id', currentStudentId);
+                formData.append('name', localStorage.getItem('studentName'));
+                formData.append('program', localStorage.getItem('studentProgram'));
+                formData.append('semester', localStorage.getItem('studentSemester'));
+                
+                try {
+                    const response = await fetch('/upload_timetable', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        statusDiv.style.background = '#4caf50';
+                        statusDiv.innerHTML = `✅ ${result.message}`;
+                    } else {
+                        statusDiv.style.background = '#ff6b6b';
+                        statusDiv.innerHTML = `❌ Error: ${result.error}`;
+                    }
+                } catch (error) {
+                    statusDiv.style.background = '#ff6b6b';
+                    statusDiv.innerHTML = `❌ Upload failed: ${error.message}`;
+                }
+            }
+            
+            // Update getResponse to include student ID
+            async function getResponse(question, isVoice = false) {
+                try {
+                    const response = await fetch('/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            question: question,
+                            student_id: currentStudentId  // Include student ID in request
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    const answer = data.answer;
+                    
+                    addToTranscript('Assistant', answer);
+                    
+                    if (isVoice) {
+                        addChatMessage('bot', answer);
+                    }
+                    
+                    // Speak response if voice is active
+                    if (isVoice && voiceActive) {
+                        await speakResponse(answer);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    addToTranscript('Assistant', 'Sorry, I had trouble processing that.');
+                }
+            }
         </script>
     </body>
     </html>
@@ -633,7 +876,8 @@ async def home():
 async def ask(request: Request):
     data = await request.json()
     question = data.get("question", "")
-    answer = answer_question(question)
+    student_id = data.get("student_id", None)  # Get student ID if provided
+    answer = answer_question(question, student_id)
     return {"answer": answer}
 
 @app.post("/speak")
@@ -665,6 +909,52 @@ async def speak(request: Request):
     except Exception as e:
         print(f"Error generating speech: {e}")
         return {"error": str(e)}
+
+@app.post("/upload_timetable")
+async def upload_timetable(
+    file: UploadFile = File(...),
+    student_id: str = Form(...),
+    name: str = Form(...),
+    program: str = Form(...),
+    semester: int = Form(...)
+):
+    """Upload and process student timetable"""
+    try:
+        # Save user profile
+        user_storage.save_user_profile(student_id, name, program, semester)
+        
+        # Read PDF content
+        pdf_content = await file.read()
+        
+        # Save PDF
+        pdf_path = user_storage.save_timetable_pdf(student_id, pdf_content)
+        
+        # Extract timetable data using Gemini
+        timetable_data = timetable_extractor.extract_timetable_from_pdf(pdf_path)
+        
+        # Save extracted data
+        user_storage.save_timetable_data(student_id, timetable_data)
+        
+        return JSONResponse({
+            "success": True,
+            "message": f"Timetable uploaded and processed! Found {len(timetable_data.get('schedule', []))} classes.",
+            "classes_count": len(timetable_data.get('schedule', []))
+        })
+    except Exception as e:
+        print(f"Error uploading timetable: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+
+@app.get("/user_profile/{student_id}")
+async def get_profile(student_id: str):
+    """Get user profile"""
+    profile = user_storage.get_user_profile(student_id)
+    if profile:
+        return JSONResponse(profile)
+    else:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
 
 if __name__ == "__main__":
     print("🚀 Starting Uni Bot AI Assistant...")

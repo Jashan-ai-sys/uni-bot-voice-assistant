@@ -22,11 +22,27 @@ def get_vectorstore():
     vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
     return vectorstore
 
-def answer_question(query: str) -> str:
+def answer_question(query: str, student_id: str = None) -> str:
     """
     Answers a question using RAG based on the ingested documents.
+    Now also checks personal timetable if student_id is provided.
     """
     try:
+        # Check if query is about timetable
+        timetable_keywords = ["class", "timetable", "schedule", "teacher", "room", "lecture", "when is", "what time"]
+        is_timetable_query = any(keyword in query.lower() for keyword in timetable_keywords)
+        
+        # If student ID provided and query is about timetable, check personal data first
+        if student_id and is_timetable_query:
+            from user_storage import get_timetable_data
+            from timetable_extractor import search_timetable
+            
+            timetable_data = get_timetable_data(student_id)
+            if timetable_data:
+                personal_answer = search_timetable(timetable_data, query)
+                if personal_answer and "No matching" not in personal_answer:
+                    return personal_answer
+        
         vectorstore = get_vectorstore()
         
         # Use MMR (Maximum Marginal Relevance) for diverse, relevant results
