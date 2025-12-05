@@ -22,11 +22,42 @@ def get_vectorstore():
     vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
     return vectorstore
 
-def answer_question(query: str) -> str:
+def answer_question(query: str, student_id: str = None) -> str:
     """
     Answers a question using RAG based on the ingested documents.
+    Now also checks personal timetable if student_id is provided.
     """
+    # Check for timetable queries first
+    if student_id:
+        try:
+            import user_storage
+            import timetable_extractor
+            
+            timetable_keywords = ["class", "schedule", "timetable", "subject", "room", "lecture", "practical", "tutorial", "when", "where", "time", "monday", "tuesday", "wednesday", "thursday", "friday"]
+            if any(keyword in query.lower() for keyword in timetable_keywords):
+                timetable_data = user_storage.get_user_timetable(student_id)
+                if timetable_data and timetable_data.get("schedule"):
+                    return timetable_extractor.search_timetable(timetable_data, query)
+        except Exception as e:
+            print(f"Timetable check error: {e}")
+    
+    # General RAG pipeline
     try:
+        # Check if query is about timetable
+        timetable_keywords = ["class", "timetable", "schedule", "teacher", "room", "lecture", "when is", "what time"]
+        is_timetable_query = any(keyword in query.lower() for keyword in timetable_keywords)
+        
+        # If student ID provided and query is about timetable, check personal data first
+        if student_id and is_timetable_query:
+            from user_storage import get_timetable_data
+            from timetable_extractor import search_timetable
+            
+            timetable_data = get_timetable_data(student_id)
+            if timetable_data:
+                personal_answer = search_timetable(timetable_data, query)
+                if personal_answer and "No matching" not in personal_answer:
+                    return personal_answer
+        
         vectorstore = get_vectorstore()
         
         # Use MMR (Maximum Marginal Relevance) for diverse, relevant results
@@ -52,24 +83,35 @@ def answer_question(query: str) -> str:
         import google.generativeai as genai
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
         system_prompt = (
-            "You are a helpful university assistant. "
+            "You are JARVIS, a friendly and helpful university assistant. "
             "Use the retrieved context to answer the question. "
             "If you don't know, say you don't know.\n\n"
-            "FORMATTING RULES:\n"
-            "- Use bullet points for lists\n"
-            "- Use emojis to make the answer engaging (e.g., 🎓, 📚, 📝)\n"
-            "- Keep the answer concise but structured\n"
-            "- Use bold text for key terms\n\n"
+            "FORMATTING RULES (CRITICAL - FOLLOW EXACTLY):\n"
+            "1. Start with a brief intro sentence\n"
+            "2. Use clear section headers with emojis (## Header 🎯)\n"
+            "3. Under each section, use bullet points with • symbol\n"
+            "4. Add relevant emojis BEFORE each bullet point\n"
+            "5. Use **bold** for important terms and values\n"
+            "6. Keep bullet points short and scannable (max 1-2 lines each)\n"
+            "7. End with a friendly closing line\n\n"
+            "EXAMPLE FORMAT:\n"
+            "Here's what I found about [topic]:\n\n"
+            "## Main Category 📋\n"
+            "• 🎯 **Item 1**: Brief description\n"
+            "• ✅ **Item 2**: Another point\n\n"
+            "## Another Section 🏫\n"
+            "• 💡 **Detail**: Information here\n\n"
+            "Hope this helps! 😊\n\n"
             f"Context:\n{context}\n\n"
             f"Question: {query}"
         )
         
         # Retry logic for rate limits
-        max_retries = 3
-        retry_delay = 2
+        max_retries = 5
+        retry_delay = 4
         
         for attempt in range(max_retries):
             try:
@@ -80,7 +122,7 @@ def answer_question(query: str) -> str:
                 if "429" in error_str or "Resource exhausted" in error_str:
                     if attempt < max_retries - 1:
                         import time
-                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                        wait_time = retry_delay * (2 ** attempt)
                         print(f"Rate limit hit. Waiting {wait_time}s before retry...")
                         time.sleep(wait_time)
                         continue

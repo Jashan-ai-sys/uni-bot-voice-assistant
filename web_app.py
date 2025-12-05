@@ -1,23 +1,34 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
-from rag_pipeline import answer_question
-import uvicorn
 import os
-import json
-import base64
-import google.generativeai as genai
+import sys
+import io
+# Force UTF-8 encoding for stdout/stderr
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+sys.path.append('src')
+
+from fastapi import FastAPI, Request, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+import uvicorn
 from dotenv import load_dotenv
+import google.generativeai as genai
+from src.rag_pipeline import answer_question
+import src.user_storage as user_storage
+import src.timetable_extractor as timetable_extractor
 
 load_dotenv()
 
 app = FastAPI()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
-@app.get("/", response_class=HTMLResponse)
+from elevenlabs import ElevenLabs
+
+client = ElevenLabs(
+  api_key=os.getenv("ELEVENLABS_API_KEY")
+)
+
 @app.get("/", response_class=HTMLResponse)
 async def home():
     return """<!DOCTYPE html>
@@ -28,6 +39,7 @@ async def home():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JARVIS AI Assistant</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
@@ -363,6 +375,7 @@ async def home():
             <div class="sidebar-icon active">🏠</div>
             <div class="sidebar-icon">🎓</div>
             <div class="sidebar-icon">📚</div>
+            <div class="sidebar-icon" onclick="openTimetableModal()" title="Upload Timetable">📅</div>
             <div class="sidebar-icon">⚙️</div>
         </div>
 
@@ -423,6 +436,25 @@ async def home():
                     </svg>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Timetable Upload Modal -->
+    <div id="timetableModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: #1a1a1a; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; border: 1px solid #00ffff;">
+            <h2 style="color: #00ffff; margin-bottom: 20px;">📅 Upload Your Timetable</h2>
+            <form id="timetableForm" onsubmit="uploadTimetable(event)">
+                <input type="text" id="studentId" placeholder="Student ID" required style="width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff;">
+                <input type="text" id="studentName" placeholder="Your Name" required style="width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff;">
+                <input type="text" id="program" placeholder="Program (e.g., B.Tech CSE)" required style="width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff;">
+                <input type="number" id="semester" placeholder="Semester" required style="width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff;">
+                <input type="file" id="timetableFile" accept=".pdf" required style="width: 100%; padding: 12px; margin-bottom: 20px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff;">
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #00ffff, #00aaaa); border: none; border-radius: 8px; color: #000; font-weight: bold; cursor: pointer;">Upload</button>
+                    <button type="button" onclick="closeTimetableModal()" style="flex: 1; padding: 12px; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 8px; color: #fff; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+            <div id="uploadStatus" style="margin-top: 15px; color: #00ffff; text-align: center;"></div>
         </div>
     </div>
 
@@ -630,7 +662,14 @@ async def home():
             const messagesDiv = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}-message`;
-            messageDiv.textContent = text;
+            
+            if (type === 'bot') {
+                // Parse markdown for bot messages
+                messageDiv.innerHTML = marked.parse(text);
+            } else {
+                messageDiv.textContent = text;
+            }
+            
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
@@ -639,10 +678,16 @@ async def home():
             updateStatus('Thinking...');
 
             try {
+                // Get student_id from local storage if available
+                const studentId = localStorage.getItem('studentId');
+                
                 const response = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question })
+                    body: JSON.stringify({ 
+                        question: question,
+                        student_id: studentId 
+                    })
                 });
 
                 const data = await response.json();
@@ -710,13 +755,151 @@ async def home():
         // Initialize Three.js on load
         window.addEventListener('load', initThreeJS);
 
+        // ===== TIMETABLE UPLOAD FUNCTIONS =====
+        let currentStudentId = null;
+
+        function openTimetableModal() {
+            document.getElementById('timetableModal').style.display = 'flex';
+        }
+
+        function closeTimetableModal() {
+            document.getElementById('timetableModal').style.display = 'none';
+            document.getElementById('timetableForm').reset();
+            document.getElementById('uploadStatus').textContent = '';
+        }
+
+        async function uploadTimetable(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('studentId').value;
+            const name = document.getElementById('studentName').value;
+            const program = document.getElementById('program').value;
+            const semester = document.getElementById('semester').value;
+            const file = document.getElementById('timetableFile').files[0];
+            
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = '⏳ Uploading and processing...';
+            
+            const formData = new FormData();
+            formData.append('student_id', studentId);
+            formData.append('name', name);
+            formData.append('program', program);
+            formData.append('semester', semester);
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/upload_timetable', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentStudentId = studentId;
+                    localStorage.setItem('studentId', studentId);
+                    statusDiv.style.color = '#00ff00';
+                    statusDiv.textContent = '✅ Timetable uploaded successfully!';
+                    setTimeout(closeTimetableModal, 2000);
+                } else {
+                    statusDiv.style.color = '#ff4444';
+                    statusDiv.textContent = '❌ Error: ' + (data.error || 'Upload failed');
+                }
+            } catch (error) {
+                statusDiv.style.color = '#ff4444';
+                statusDiv.textContent = '❌ Network error. Please try again.';
+            }
+        }
+
+        // Load saved student ID
+        currentStudentId = localStorage.getItem('studentId');
+
     </script>
 </body>
 
 </html>"""
 
+@app.post("/ask")
+async def ask(request: Request):
+    data = await request.json()
+    question = data.get("question", "")
+    student_id = data.get("student_id", None)
+    answer = answer_question(question, student_id)
+    return {"answer": answer}
+
+@app.post("/speak")
+async def speak(request: Request):
+    """Generate speech from text using ElevenLabs"""
+    try:
+        data = await request.json()
+        text = data.get("text", "")
+        
+        if not text:
+            return JSONResponse({"error": "No text provided"}, status_code=400)
+
+        print(f"🎤 Generating audio for: {text[:50]}...")
+        
+        # Generate audio using the correct v1+ SDK method
+        # Use a specific voice ID for 'Rachel' or let it default if allowed, 
+        # but explicit ID is safer. Rachel ID: 21m00Tcm4TlvDq8ikWAM
+        audio_generator = client.text_to_speech.convert(
+            voice_id="21m00Tcm4TlvDq8ikWAM", 
+            text=text,
+            model_id="eleven_multilingual_v2"
+        )
+        
+        # Consume the generator to get bytes
+        audio_bytes = b"".join(audio_generator)
+        print(f"✅ Audio generated: {len(audio_bytes)} bytes")
+        
+        # Return audio as response
+        from fastapi.responses import Response
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ ElevenLabs Error: {e}")
+        print(error_trace)
+        return JSONResponse({"error": str(e), "trace": error_trace}, status_code=500)
+
+@app.post("/upload_timetable")
+async def upload_timetable_endpoint(
+    student_id: str = Form(...),
+    name: str = Form(...),
+    program: str = Form(...),
+    semester: int = Form(...),
+    file: UploadFile = File(...)
+):
+    """Handle timetable PDF upload"""
+    try:
+        # Save profile
+        user_storage.save_user_profile(student_id, name, program, semester)
+        
+        # Save PDF
+        pdf_content = await file.read()
+        pdf_path = user_storage.save_user_timetable_pdf(student_id, pdf_content)
+        
+        # Extract timetable
+        timetable_data = timetable_extractor.extract_timetable_from_pdf(pdf_path)
+        
+        # Save extracted data
+        user_storage.save_user_timetable(student_id, timetable_data, pdf_path)
+        
+        return JSONResponse({"success": True, "message": "Timetable uploaded successfully!"})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+@app.get("/user_profile/{student_id}")
+async def get_user_profile_endpoint(student_id: str):
+    """Get user profile"""
+    profile = user_storage.get_user_profile(student_id)
+    if profile:
+        return JSONResponse({"success": True, "profile": profile})
+    return JSONResponse({"success": False, "message": "Profile not found"}, status_code=404)
+
 if __name__ == "__main__":
-    print("🚀 Starting Uni Bot AI Assistant...")
-    print("📱 Open your browser and go to: http://localhost:8000")
-    print("🎤 Use voice or 💬 type your questions!")
+    print("Starting Uni Bot AI Assistant...")
+    print("Open your browser and go to: http://localhost:8000")
+    print("Use voice or type your questions!")
     uvicorn.run(app, host="0.0.0.0", port=8000)
