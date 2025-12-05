@@ -11,3 +11,4 @@ python-dotenv
 elevenlabs
 unstructured
 python-magic-bin
+langchain-openai

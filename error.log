@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\WIN11\lpu bot RAG\uni-bot\web_app.py", line 18, in <module>
+    import timetable_extractor
+  File "C:\Users\WIN11\lpu bot RAG\uni-bot\src\timetable_extractor.py", line 60
+    - Extract COURSE CODE after "C:" (e.g., C:PEAS05 → PEAS05)
+                                                     ^
+SyntaxError: invalid character '→' (U+2192)
