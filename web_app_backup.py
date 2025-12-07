@@ -31,7 +31,7 @@ client = ElevenLabs(
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    return r"""<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -372,10 +372,11 @@ async def home():
     <div class="main-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            
-
+            <div class="sidebar-icon active">🏠</div>
+            <div class="sidebar-icon">🎓</div>
+            <div class="sidebar-icon">📚</div>
             <div class="sidebar-icon" onclick="openTimetableModal()" title="Upload Timetable">📅</div>
-            
+            <div class="sidebar-icon">⚙️</div>
         </div>
 
         <!-- Chat Panel -->
@@ -396,13 +397,27 @@ async def home():
                     <div class="input-icon">🔍</div>
                     <input type="text" class="chat-input" id="chatInput"
                         placeholder="Ask anything. Type @ for mentions and / for shortcuts."
-                        onkeydown="handleKeyPress(event)"
-                        />
-
+                        onkeypress="handleKeyPress(event)">
+                    <div class="input-icon">📎</div>
+                    <div class="input-icon">😊</div>
+                    <div class="input-icon">🎤</div>
                     <div class="input-icon" onclick="sendMessage()">➤</div>
                 </div>
 
-
+                <div class="bottom-actions">
+                    <div class="action-btn" onclick="tryAssistant()">
+                        <span>✨</span>
+                        <span>Try Assistant</span>
+                    </div>
+                    <div class="action-btn">
+                        <span>⚙️</span>
+                        <span>Customize</span>
+                    </div>
+                    <div class="action-btn">
+                        <span>👥</span>
+                        <span>Invite Friends</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -589,6 +604,7 @@ async def home():
 
             recognition.onresult = async function (event) {
                 const transcript = event.results[event.results.length - 1][0].transcript;
+                addMessage(transcript, 'user');
                 await getResponse(transcript, true);
             };
 
@@ -660,6 +676,7 @@ async def home():
 
         async function getResponse(question, isVoice) {
             updateStatus('Thinking...');
+            addMessage(question, 'user');
             
             // Create container for new message
             const botMessageDiv = document.createElement('div');
