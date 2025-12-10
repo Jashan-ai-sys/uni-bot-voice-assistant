@@ -31,7 +31,7 @@ client = ElevenLabs(
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    return r"""<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -372,10 +372,11 @@ async def home():
     <div class="main-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            
-
+            <div class="sidebar-icon active">🏠</div>
+            <div class="sidebar-icon">🎓</div>
+            <div class="sidebar-icon">📚</div>
             <div class="sidebar-icon" onclick="openTimetableModal()" title="Upload Timetable">📅</div>
-            
+            <div class="sidebar-icon">⚙️</div>
         </div>
 
         <!-- Chat Panel -->
@@ -396,13 +397,27 @@ async def home():
                     <div class="input-icon">🔍</div>
                     <input type="text" class="chat-input" id="chatInput"
                         placeholder="Ask anything. Type @ for mentions and / for shortcuts."
-                        onkeydown="handleKeyPress(event)"
-                        />
-
+                        onkeypress="handleKeyPress(event)">
+                    <div class="input-icon">📎</div>
+                    <div class="input-icon">😊</div>
+                    <div class="input-icon">🎤</div>
                     <div class="input-icon" onclick="sendMessage()">➤</div>
                 </div>
 
-
+                <div class="bottom-actions">
+                    <div class="action-btn" onclick="tryAssistant()">
+                        <span>✨</span>
+                        <span>Try Assistant</span>
+                    </div>
+                    <div class="action-btn">
+                        <span>⚙️</span>
+                        <span>Customize</span>
+                    </div>
+                    <div class="action-btn">
+                        <span>👥</span>
+                        <span>Invite Friends</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -445,35 +460,17 @@ async def home():
 
     <script>
         // Three.js Particle Sphere with Audio Reactivity
-
+        let scene, camera, renderer, particles, geometry, material;
+        let audioContext, analyser, dataArray, source;
         let isListening = false;
         let animationId;
-        let scene, camera, renderer, particles, geometry, material, analyser, dataArray, source, audioContext;
 
-        function getElements() {
-             return {
-                 container: document.getElementById('canvas-container'),
-                 micBtn: document.getElementById('micBtn'),
-                 statusText: document.querySelector('.header-text')
-             };
-        }
+        const container = document.getElementById('canvas-container');
+        const micBtn = document.getElementById('micBtn');
+        const statusText = document.querySelector('.header-text');
 
         function initThreeJS() {
-            try {
-                if (typeof THREE === 'undefined') {
-                    const { statusText } = getElements();
-                    if(statusText) statusText.textContent = 'Error: Three.js failed to load';
-                    console.error('Three.js not loaded');
-                    return;
-                }
-                const { container } = getElements();
-                if (!container) {
-                    const { statusText } = getElements();
-                    if(statusText) statusText.textContent = 'Error: Canvas container missing';
-                    return;
-                }
-
-                // Scene setup
+            // Scene setup
             scene = new THREE.Scene();
 
             // Camera setup
@@ -533,14 +530,9 @@ async def home():
             window.addEventListener('resize', onWindowResize, false);
 
             animate();
-            } catch (e) {
-                console.error("ThreeJS Init Error:", e);
-            }
         }
 
         function onWindowResize() {
-            const { container } = getElements();
-            if (!container || !camera || !renderer) return;
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
@@ -612,6 +604,7 @@ async def home():
 
             recognition.onresult = async function (event) {
                 const transcript = event.results[event.results.length - 1][0].transcript;
+                addMessage(transcript, 'user');
                 await getResponse(transcript, true);
             };
 
@@ -626,16 +619,14 @@ async def home():
                 const audioInitialized = await initAudio();
                 if (audioInitialized) {
                     isListening = true;
-                    const { micBtn } = getElements();
-                    if(micBtn) micBtn.classList.add('active');
+                    micBtn.classList.add('active');
                     updateStatus('Listening...');
                     if (recognition) recognition.start();
                 }
             } else {
                 // Stop listening
                 isListening = false;
-                const { micBtn } = getElements();
-                if(micBtn) micBtn.classList.remove('active');
+                micBtn.classList.remove('active');
                 updateStatus('Ready');
                 if (recognition) recognition.stop();
 
@@ -685,6 +676,7 @@ async def home():
 
         async function getResponse(question, isVoice) {
             updateStatus('Thinking...');
+            addMessage(question, 'user');
             
             // Create container for new message
             const botMessageDiv = document.createElement('div');
@@ -819,8 +811,8 @@ async def home():
         }
 
         function updateStatus(status) {
-            const { statusText } = getElements();
-            if (statusText) statusText.textContent = `JARVIS AI Assistant - ${status}`;
+            const headerText = document.querySelector('.header-text');
+            headerText.textContent = `JARVIS AI Assistant - ${status}`;
         }
 
         function closeApp() {

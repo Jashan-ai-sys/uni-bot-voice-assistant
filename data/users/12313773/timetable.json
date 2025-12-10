@@ -122,7 +122,7 @@
     },
     {
       "day": "Thursday",
-      "time": "05-06 PM",
+      "time": "04-05 PM",
       "type": "Lecture",
       "course_code": "INT234",
       "room": "26-103",
@@ -130,7 +130,7 @@
     },
     {
       "day": "Friday",
-      "time": "04-05 PM",
+      "time": "03-04 PM",
       "type": "Practical",
       "course_code": "INT234",
       "room": "37-606",
@@ -138,7 +138,7 @@
     },
     {
       "day": "Friday",
-      "time": "05-06 PM",
+      "time": "04-05 PM",
       "type": "Practical",
       "course_code": "INT234",
       "room": "37-606",

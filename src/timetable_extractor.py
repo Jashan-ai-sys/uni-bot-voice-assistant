@@ -106,7 +106,7 @@ def extract_timetable_from_pdf(pdf_path: str) -> Dict[str, Any]:
 
 def search_timetable(timetable_data: Dict[str, Any], query: str) -> str:
     """
-    Search timetable for relevant information based on query
+    Search timetable using LLM for intelligent query understanding
     """
     if not timetable_data or "schedule" not in timetable_data:
         return "No timetable data available."
@@ -116,10 +116,53 @@ def search_timetable(timetable_data: Dict[str, Any], query: str) -> str:
     if not schedule:
         return "Your timetable appears to be empty."
     
+    # Convert schedule to readable text context for LLM
+    schedule_context = "Student's Class Schedule:\n\n"
+    for entry in schedule:
+        schedule_context += (
+            f"- {entry['day']} at {entry['time']}: "
+            f"{entry.get('type', 'Class')} {entry.get('course_code', 'N/A')} "
+            f"in Room {entry.get('room', 'N/A')} "
+            f"(Section: {entry.get('section', 'N/A')})\n"
+        )
+    
+    # Use Gemini to intelligently answer the query
+    try:
+        print(f"🤖 Using LLM to answer timetable query: {query}")
+        model = genai.GenerativeModel('models/gemini-2.0-flash-lite-preview-02-05')
+        
+        system_prompt = f"""You are a helpful assistant that answers questions about a student's class timetable.
+
+{schedule_context}
+
+User Question: {query}
+
+Instructions:
+1. Answer the question directly and concisely
+2. Only include relevant information from the schedule
+3. If asking for "next class" or "upcoming", determine what day/time it currently is and show the immediately next class
+4. Format your answer clearly with emojis and structure
+5. If the question is about a specific class, only show that class
+6. If no specific match, explain what you found
+
+Answer the user's question now:"""
+        
+        response = model.generate_content(system_prompt)
+        print(f"✅ LLM response received")
+        return response.text
+        
+    except Exception as e:
+        print(f"❌ LLM query error: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback to basic search
+        return fallback_search(schedule, query)
+
+def fallback_search(schedule: List[Dict[str, Any]], query: str) -> str:
+    """Fallback keyword-based search if LLM fails"""
     query_lower = query.lower()
     results = []
     
-    # Map day names
     days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
     
     # Check for specific day
@@ -131,16 +174,6 @@ def search_timetable(timetable_data: Dict[str, Any], query: str) -> str:
             if results:
                 return f"📅 **Your {day.capitalize()} Schedule:**\n\n" + format_schedule(results)
     
-    # Check for specific time
-    for entry in schedule:
-        entry_time = entry.get("time", "").lower()
-        # Check if query contains the time
-        if entry_time in query_lower or any(part in query_lower for part in entry_time.split("-")):
-            results.append(entry)
-    
-    if results:
-        return format_schedule(results)
-    
     # Check for course code
     for entry in schedule:
         course_code = entry.get("course_code", "").lower()
@@ -150,21 +183,8 @@ def search_timetable(timetable_data: Dict[str, Any], query: str) -> str:
     if results:
         return format_schedule(results)
     
-    # Check for class type (lecture, tutorial, practical)
-    for entry in schedule:
-        entry_type = entry.get("type", entry.get("subject", "")).lower()
-        if any(keyword in entry_type for keyword in ["lecture", "tutorial", "practical"]) and any(keyword in query_lower for keyword in ["lecture", "tutorial", "practical"]):
-            results.append(entry)
-    
-    if results:
-        return format_schedule(results)
-    
-    # If no specific match, return all schedule
-    if "all" in query_lower or "entire" in query_lower or "full" in query_lower:
-        return "📅 **Your Full Schedule:**\n\n" + format_schedule(schedule)
-    
-    # Default: show next few classes
-    return "I couldn't find a specific match. Here are your upcoming classes:\n\n" + format_schedule(schedule[:5])
+    # Default: show upcoming classes
+    return "Here are your upcoming classes:\n\n" + format_schedule(schedule[:5])
 
 def format_schedule(schedule: List[Dict[str, Any]]) -> str:
     """Format schedule entries into readable text"""

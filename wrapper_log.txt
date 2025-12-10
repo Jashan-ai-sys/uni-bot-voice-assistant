@@ -1,0 +1,47 @@
+Starting MCP Server at 06-12-2025  1:07:49.23 
+PYTHONPATH is c:\Users\WIN11\lpu bot RAG\uni-bot\src 
+[12/06/25 01:11:28] INFO     \U0001f680 MCP Server Starting...         mcp_server.py:17
+                    INFO     Processing request of type           server.py:709
+                             ListToolsRequest                                  
+                    INFO     Processing request of type           server.py:709
+                             ListPromptsRequest                                
+                    INFO     Processing request of type           server.py:709
+                             ListResourcesRequest                              
+[12/06/25 01:12:02] INFO     Processing request of type           server.py:709
+                             CallToolRequest                                   
+                    INFO     \U0001f50d Received query: hostel rules   mcp_server.py:28
+                             regulations                                       
+\U0001f50d Received query: hostel rules regulations
+                    INFO     Anonymized telemetry enabled. See    posthog.py:22
+                             https://docs.trychroma.com/telemetry              
+                             for more information.                             
+[12/06/25 01:12:25] INFO     \u2705 Generated answer length: 1097  mcp_server.py:32
+[12/06/25 01:13:27] INFO     Processing request of type           server.py:709
+                             CallToolRequest                                   
+                    INFO     \U0001f50d Received query: mess timing    mcp_server.py:28
+                             food dining hours                                 
+\U0001f50d Received query: mess timing food dining hours
+[12/06/25 01:13:31] INFO     \u2705 Generated answer length: 796   mcp_server.py:32
+[12/06/25 01:14:37] INFO     Processing request of type           server.py:709
+                             CallToolRequest                                   
+                    INFO     \U0001f50d Received query: ambulance      mcp_server.py:28
+                             emergency number contact                          
+\U0001f50d Received query: ambulance emergency number contact
+[12/06/25 01:14:41] INFO     \u2705 Generated answer length: 334   mcp_server.py:32
+[12/06/25 23:05:18] INFO     \U0001f680 MCP Server Starting...         mcp_server.py:17
+                    INFO     Processing request of type           server.py:709
+                             ListToolsRequest                                  
+                    INFO     Processing request of type           server.py:709
+                             ListPromptsRequest                                
+                    INFO     Processing request of type           server.py:709
+                             ListResourcesRequest                              
+[12/06/25 23:15:50] INFO     Processing request of type           server.py:709
+                             CallToolRequest                                   
+                    INFO     \U0001f50d Received query: emergency      mcp_server.py:32
+                             numbers contacts security fire                    
+                             ambulance | Student ID: None                      
+\U0001f50d Query: emergency numbers contacts security fire ambulance | ID: None
+                    INFO     Anonymized telemetry enabled. See    posthog.py:22
+                             https://docs.trychroma.com/telemetry              
+                             for more information.                             
+[12/06/25 23:15:56] INFO     \u2705 Generated answer length: 1401  mcp_server.py:36
