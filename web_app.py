@@ -445,17 +445,35 @@ async def home():
 
     <script>
         // Three.js Particle Sphere with Audio Reactivity
-        let scene, camera, renderer, particles, geometry, material;
-        let audioContext, analyser, dataArray, source;
+
         let isListening = false;
         let animationId;
+        let scene, camera, renderer, particles, geometry, material, analyser, dataArray, source, audioContext;
 
-        const container = document.getElementById('canvas-container');
-        const micBtn = document.getElementById('micBtn');
-        const statusText = document.querySelector('.header-text');
+        function getElements() {
+             return {
+                 container: document.getElementById('canvas-container'),
+                 micBtn: document.getElementById('micBtn'),
+                 statusText: document.querySelector('.header-text')
+             };
+        }
 
         function initThreeJS() {
-            // Scene setup
+            try {
+                if (typeof THREE === 'undefined') {
+                    const { statusText } = getElements();
+                    if(statusText) statusText.textContent = 'Error: Three.js failed to load';
+                    console.error('Three.js not loaded');
+                    return;
+                }
+                const { container } = getElements();
+                if (!container) {
+                    const { statusText } = getElements();
+                    if(statusText) statusText.textContent = 'Error: Canvas container missing';
+                    return;
+                }
+
+                // Scene setup
             scene = new THREE.Scene();
 
             // Camera setup
@@ -515,9 +533,14 @@ async def home():
             window.addEventListener('resize', onWindowResize, false);
 
             animate();
+            } catch (e) {
+                console.error("ThreeJS Init Error:", e);
+            }
         }
 
         function onWindowResize() {
+            const { container } = getElements();
+            if (!container || !camera || !renderer) return;
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
@@ -603,14 +626,16 @@ async def home():
                 const audioInitialized = await initAudio();
                 if (audioInitialized) {
                     isListening = true;
-                    micBtn.classList.add('active');
+                    const { micBtn } = getElements();
+                    if(micBtn) micBtn.classList.add('active');
                     updateStatus('Listening...');
                     if (recognition) recognition.start();
                 }
             } else {
                 // Stop listening
                 isListening = false;
-                micBtn.classList.remove('active');
+                const { micBtn } = getElements();
+                if(micBtn) micBtn.classList.remove('active');
                 updateStatus('Ready');
                 if (recognition) recognition.stop();
 
@@ -794,8 +819,8 @@ async def home():
         }
 
         function updateStatus(status) {
-            const headerText = document.querySelector('.header-text');
-            headerText.textContent = `JARVIS AI Assistant - ${status}`;
+            const { statusText } = getElements();
+            if (statusText) statusText.textContent = `JARVIS AI Assistant - ${status}`;
         }
 
         function closeApp() {

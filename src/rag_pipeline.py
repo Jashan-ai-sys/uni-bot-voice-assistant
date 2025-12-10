@@ -104,11 +104,8 @@ def answer_question(query: str, student_id: str = None) -> str:
         
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
-            page = doc.metadata.get('page', '')
             citation = f"{source}"
-            if page: citation += f" (p. {page})"
-            
-            content = f"[Source: {citation}]\n{doc.page_content}"
+            content = f"Source: {citation}\nContent: {doc.page_content}"
             
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
@@ -121,43 +118,76 @@ def answer_question(query: str, student_id: str = None) -> str:
         if not context:
             return "I couldn't find any specific documents matching your query. Please try rephrasing."
 
-        # Configure GenAI
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        # LangChain Generation
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
         
-        system_prompt = (
-            "You are JARVIS, a smart university assistant.\n"
-            "Use the provided context to answer the user's question accurately.\n\n"
-            "STRICT GUIDELINES:\n"
-            "1. **No Hallucinations**: If the answer is not in the context, say 'I don't have that information in my documents'. Do not make up facts.\n"
-            "2. **Citations**: When stating specific rules, fees, or locations, mention the source filename in brackets, e.g., [exam_rules.pdf].\n"
-            "3. **Tone**: Be professional but friendly.\n"
-            "4. **Formatting**: Use clear headers, bullet points, and emojis for readability.\n\n"
-            "Refrain from inventing numbers, dates, or contact details.\n"
-            f"Context:\n{context}\n\n"
-            f"Question: {query}"
-        )
+        template = """
+You are JARVIS — a precise, reliable university assistant.
+You answer ONLY using the information present in the provided context.
+
+====================================================
+🔒 RULES (STRICT — DO NOT VIOLATE)
+====================================================
+1. ❗ NO HALLUCINATIONS  
+   - If the answer is NOT found in context, reply exactly:  
+     "I don't have that information in my documents."
+
+2. ❗ NO SOURCE OR FILE NAMES  
+   - Never reveal document names, PDF names, metadata, or citation text.
+
+3. ❗ STAY WITHIN CONTEXT  
+   - Do NOT invent numbers, dates, fees, rules, policies, or map details.
+
+4. ❗ STRUCTURE EVERYTHING  
+   - ALWAYS use a clean, organized format:
+        - Bullet points
+        - Step-by-step lists
+        - Headings
+        - Tables (if needed)
+
+5. ❗ TONE  
+   - Friendly, clear, professional.
+   - No emojis *unless the user uses them first*.
+
+====================================================
+📌 HOW TO ANSWER
+====================================================
+ALWAYS follow this format:
+
+**Answer:**
+<your clear answer here>
+
+**If helpful, also include:**
+- Key points
+- Steps or instructions
+- Short summary
+
+====================================================
+📚 CONTEXT
+(Use ONLY the following information to answer)
+====================================================
+{context}
+
+====================================================
+❓ USER QUESTION
+====================================================
+{query}
+"""
+        prompt = ChatPromptTemplate.from_template(template)
+        # We can just invoke the chain
+        chain = prompt | llm | StrOutputParser()
         
-        # Retry logic for rate limits
-        max_retries = 10
-        retry_delay = 4
-        
-        for attempt in range(max_retries):
-            try:
-                response = model.generate_content(system_prompt)
-                return response.text
-            except Exception as e:
-                error_str = str(e)
-                if "429" in error_str or "Resource exhausted" in error_str:
-                    if attempt < max_retries - 1:
-                        import time
-                        time.sleep(retry_delay * (2 ** attempt))
-                        continue
-                    else:
-                        return "I'm experiencing heavy traffic. Please ask again in a moment."
-                raise e
+        # Simple invoke without extra retry logic wrapper for sync (LangChain has some built-in defaults)
+        try:
+            return chain.invoke({"context": context, "query": query})
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "Resource exhausted" in error_str:
+                return "I'm experiencing heavy traffic. Please ask again in a moment."
+            raise e
         
     except Exception as e:
         import traceback
@@ -216,11 +246,8 @@ async def answer_question_stream(query: str, student_id: str = None):
         
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
-            page = doc.metadata.get('page', '')
             citation = f"{source}"
-            if page: citation += f" (p. {page})"
-            
-            content = f"[Source: {citation}]\n{doc.page_content}"
+            content = f"Source: {citation}\nContent: {doc.page_content}"
             
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
@@ -234,37 +261,84 @@ async def answer_question_stream(query: str, student_id: str = None):
             yield "I couldn't find any specific documents matching your query. Please try rephrasing."
             return
 
-        # Configure GenAI for streaming
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        # LangChain Generation
+        import os
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
         
-        system_prompt = (
-            "You are JARVIS, a smart university assistant.\n"
-            "Use the provided context to answer the user's question accurately.\n\n"
-            "STRICT GUIDELINES:\n"
-            "1. **No Hallucinations**: If the answer is not in the context, say 'I don't have that information in my documents'. Do not make up facts.\n"
-            "2. **Citations**: When stating specific rules, fees, or locations, mention the source filename in brackets, e.g., [exam_rules.pdf].\n"
-            "3. **Tone**: Be professional but friendly.\n"
-            "4. **Formatting**: Use clear headers, bullet points, and emojis for readability.\n\n"
-            "Refrain from inventing numbers, dates, or contact details.\n"
-            f"Context:\n{context}\n\n"
-            f"Question: {query}"
-        )
-        
+        template = """
+You are JARVIS — a precise, reliable university assistant.
+You answer ONLY using the information present in the provided context.
+
+====================================================
+🔒 RULES (STRICT — DO NOT VIOLATE)
+====================================================
+1. ❗ NO HALLUCINATIONS  
+   - If the answer is NOT found in context, reply exactly:  
+     "I don't have that information in my documents."
+
+2. ❗ NO SOURCE OR FILE NAMES  
+   - Never reveal document names, PDF names, metadata, or citation text.
+
+3. ❗ STAY WITHIN CONTEXT  
+   - Do NOT invent numbers, dates, fees, rules, policies, or map details.
+
+4. ❗ STRUCTURE EVERYTHING  
+   - ALWAYS use a clean, organized format:
+        - Bullet points
+        - Step-by-step lists
+        - Headings
+        - Tables (if needed)
+
+5. ❗ TONE  
+   - Friendly, clear, professional.
+   - No emojis *unless the user uses them first*.
+
+====================================================
+📌 HOW TO ANSWER
+====================================================
+ALWAYS follow this format:
+
+**Answer:**
+<your clear answer here>
+
+**If helpful, also include:**
+- Key points
+- Steps or instructions
+- Short summary
+
+====================================================
+📚 CONTEXT
+(Use ONLY the following information to answer)
+====================================================
+{context}
+
+====================================================
+❓ USER QUESTION
+====================================================
+{query}
+"""
+        prompt = ChatPromptTemplate.from_template(template)
+        pass_through_chain = prompt | llm | StrOutputParser()
+
         # Retry logic for rate limits
         max_retries = 10
         retry_delay = 4
-        
+
         for attempt in range(max_retries):
             try:
-                response = model.generate_content(system_prompt, stream=True)
-                for chunk in response:
-                    if chunk.text:
-                        yield chunk.text
+                print(f"Generating content with model: {llm.model}")
+                for chunk in pass_through_chain.stream({"context": context, "query": query}):
+                    print(f"Chunk received: {chunk}")
+                    if chunk:
+                        yield chunk
+                print("Stream finished.")
                 return
             except Exception as e:
+                print(f"Stream error: {e}")
                 error_str = str(e)
                 if "429" in error_str or "Resource exhausted" in error_str:
                     if attempt < max_retries - 1:
@@ -276,11 +350,14 @@ async def answer_question_stream(query: str, student_id: str = None):
                         return
                 else:
                     raise e
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()
         yield f"I encountered an issue searching my database: {str(e)}"
+
+# Alias for web_app compatibility
+# answer_question_stream = answer_question
 
 if __name__ == "__main__":
     # Test the pipeline locally
