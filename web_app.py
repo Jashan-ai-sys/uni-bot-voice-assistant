@@ -924,14 +924,20 @@ async def ask_stream(request: Request):
     question = data.get("question", "")
     student_id = data.get("student_id", None)
     
+    print(f"\n[DEBUG] WEB: Received stream request: {question}")
+    
     async def generate():
         # Import here to access streaming API
         from src.rag_pipeline import answer_question_stream
         try:
+            print("[DEBUG] WEB: Starting generator loop...")
             async for chunk in answer_question_stream(question, student_id):
+                print(f"[DEBUG] WEB: Chunk: {chunk[:20]}...")
                 yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            print("[DEBUG] WEB: Generator finished.")
             yield f"data: {json.dumps({'done': True})}\n\n"
         except Exception as e:
+            print(f"[DEBUG] WEB: Generator ERROR: {e}")
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
     
     return StreamingResponse(generate(), media_type="text/event-stream")

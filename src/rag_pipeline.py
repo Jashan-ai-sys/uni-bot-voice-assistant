@@ -15,7 +15,7 @@ def get_vectorstore():
     """
     if not os.path.exists(DB_PATH):
         raise FileNotFoundError(f"Vector DB not found at {DB_PATH}. Please run ingest.py first.")
-        
+       
     embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
     vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
     return vectorstore
@@ -25,7 +25,7 @@ def identify_intent(query: str) -> dict:
     Analyzes query to determine if strict metadata filtering should be applied.
     """
     query_lower = query.lower()
-    
+   
     # Map keywords to doc_type
     intent_map = {
         "map": "map",
@@ -46,11 +46,11 @@ def identify_intent(query: str) -> dict:
         "room": "hostel",
         "warden": "hostel"
     }
-    
+   
     for key, doc_type in intent_map.items():
         if key in query_lower:
             return {"doc_type": doc_type}
-            
+           
     return None
 
 def answer_question(query: str, student_id: str = None) -> str:
@@ -66,7 +66,7 @@ def answer_question(query: str, student_id: str = None) -> str:
         try:
             import user_storage
             import timetable_extractor
-            
+           
             if is_timetable_query:
                 print(f"📅 Checking timetable for student_id: {student_id}")
                 timetable_data = user_storage.get_user_timetable(student_id)
@@ -77,53 +77,53 @@ def answer_question(query: str, student_id: str = None) -> str:
                     return result
         except Exception as e:
             print(f"Timetable check error: {e}")
-    
+   
     # General RAG pipeline
     try:
         vectorstore = get_vectorstore()
-        
+       
         # Determine filters
         search_filter = identify_intent(query)
-        
+       
         # Search strategy
         k_val = 8 if search_filter else 10 # More specific if filtered
-        
+       
         # Use MMR for diversity
         docs = vectorstore.max_marginal_relevance_search(
-            query, 
+            query,
             k=k_val,
             filter=search_filter,
             fetch_k=20,
             lambda_mult=0.6 # slightly more diversity
         )
-        
+       
         # Construct context with citations
         context_parts = []
         total_chars = 0
         MAX_CTX_CHARS = 10000  # Cap context size
-        
+       
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
             citation = f"{source}"
             content = f"Source: {citation}\nContent: {doc.page_content}"
-            
+           
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
-                
+               
             context_parts.append(content)
             total_chars += len(content)
-        
+       
         context = "\n\n---\n\n".join(context_parts)
-        
+       
         if not context:
             return "I couldn't find any specific documents matching your query. Please try rephrasing."
 
         # LangChain Generation
         from langchain_core.prompts import ChatPromptTemplate
         from langchain_core.output_parsers import StrOutputParser
-        
+       
         llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
-        
+       
         template = """
 You are JARVIS — a precise, reliable university assistant.
 You answer ONLY using the information present in the provided context.
@@ -179,7 +179,7 @@ ALWAYS follow this format:
         prompt = ChatPromptTemplate.from_template(template)
         # We can just invoke the chain
         chain = prompt | llm | StrOutputParser()
-        
+       
         # Simple invoke without extra retry logic wrapper for sync (LangChain has some built-in defaults)
         try:
             return chain.invoke({"context": context, "query": query})
@@ -188,7 +188,7 @@ ALWAYS follow this format:
             if "429" in error_str or "Resource exhausted" in error_str:
                 return "I'm experiencing heavy traffic. Please ask again in a moment."
             raise e
-        
+       
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -207,7 +207,7 @@ async def answer_question_stream(query: str, student_id: str = None):
         try:
             import user_storage
             import timetable_extractor
-            
+           
             if is_timetable_query:
                 timetable_data = user_storage.get_user_timetable(student_id)
                 if timetable_data and timetable_data.get("schedule"):
@@ -219,124 +219,144 @@ async def answer_question_stream(query: str, student_id: str = None):
                     return
         except Exception as e:
             print(f"Timetable check error: {e}")
-    
+   
     # General RAG pipeline with streaming
     try:
         vectorstore = get_vectorstore()
-        
+       
         # Determine filters
         search_filter = identify_intent(query)
-        
+       
         # Search strategy
         k_val = 8 if search_filter else 10
-        
+       
         # Use MMR for diversity
         docs = vectorstore.max_marginal_relevance_search(
-            query, 
+            query,
             k=k_val,
             filter=search_filter,
             fetch_k=20,
             lambda_mult=0.6
         )
-        
+       
         # Construct context
         context_parts = []
         total_chars = 0
         MAX_CTX_CHARS = 10000
-        
+       
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
             citation = f"{source}"
             content = f"Source: {citation}\nContent: {doc.page_content}"
-            
+           
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
-                
+               
             context_parts.append(content)
             total_chars += len(content)
-        
+       
         context = "\n\n---\n\n".join(context_parts)
-        
+       
         if not context:
             yield "I couldn't find any specific documents matching your query. Please try rephrasing."
             return
 
-        # LangChain Generation
-        import os
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        from langchain_core.prompts import ChatPromptTemplate
-        from langchain_core.output_parsers import StrOutputParser
-        
-        llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
-        
-        template = """
-You are JARVIS — a precise, reliable university assistant.
-You answer ONLY using the information present in the provided context.
-
-====================================================
-🔒 RULES (STRICT — DO NOT VIOLATE)
-====================================================
-1. ❗ NO HALLUCINATIONS  
-   - If the answer is NOT found in context, reply exactly:  
-     "I don't have that information in my documents."
-
-2. ❗ NO SOURCE OR FILE NAMES  
-   - Never reveal document names, PDF names, metadata, or citation text.
-
-3. ❗ STAY WITHIN CONTEXT  
-   - Do NOT invent numbers, dates, fees, rules, policies, or map details.
-
-4. ❗ STRUCTURE EVERYTHING  
-   - ALWAYS use a clean, organized format:
-        - Bullet points
-        - Step-by-step lists
-        - Headings
-        - Tables (if needed)
-
-5. ❗ TONE  
-   - Friendly, clear, professional.
-   - No emojis *unless the user uses them first*.
-
-====================================================
-📌 HOW TO ANSWER
-====================================================
-ALWAYS follow this format:
-
-**Answer:**
-<your clear answer here>
-
-**If helpful, also include:**
-- Key points
-- Steps or instructions
-- Short summary
-
-====================================================
-📚 CONTEXT
-(Use ONLY the following information to answer)
-====================================================
-{context}
-
-====================================================
-❓ USER QUESTION
-====================================================
-{query}
-"""
-        prompt = ChatPromptTemplate.from_template(template)
-        pass_through_chain = prompt | llm | StrOutputParser()
-
         # Retry logic for rate limits
         max_retries = 10
         retry_delay = 4
+       
+        import asyncio
+        import queue
+        from concurrent.futures import ThreadPoolExecutor
+        import os
+
+        # LangChain Generation with RAW SDK Wrapper (bypass ChatGoogleGenerativeAI)
+        # We need this because LangChain's parser fails on Gemini 2.5 experimental fields
+        # and sync calls block the server.
+        
+        system_prompt = (
+            "You are JARVIS — a precise, reliable university assistant.\n"
+            "You answer questions using the provided context.\n\n"
+            "STRICT RULES:\n"
+            "1. NO HALLUCINATIONS. If not in context AND the user is asking for specific info, say 'I don't have that information'.\n"
+            "2. GREETINGS: If the user says 'hi', 'hello', or introduces themselves, reply politely and ask how you can help (you do NOT need context for this).\n"
+            "3. NO SOURCE FILENAMES in output.\n"
+            "4. Structure with bullet points.\n"
+            f"Context:\n{context}\n\n"
+            f"Question: {query}"
+        )
 
         for attempt in range(max_retries):
             try:
-                print(f"Generating content with model: {llm.model}")
-                for chunk in pass_through_chain.stream({"context": context, "query": query}):
-                    print(f"Chunk received: {chunk}")
-                    if chunk:
-                        yield chunk
-                print("Stream finished.")
+                # Queue for communicating chunks from thread to async loop
+                chunk_queue = asyncio.Queue()
+                loop = asyncio.get_running_loop()
+                
+                # Worker function to run in separate thread
+                def producer_thread():
+                    try:
+                        import google.generativeai as genai
+                        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+                        model = genai.GenerativeModel('models/gemini-2.5-flash')
+                        
+                        print(f"DEBUG: Thread started for {model.model_name}")
+                        
+                        # Blocking call
+                        response = model.generate_content(system_prompt, stream=True)
+                        
+                        # Blocking iteration
+                        for chunk in response:
+                            if chunk.text:
+                                # Schedule putting data into queue (thread-safe for loop)
+                                loop.call_soon_threadsafe(chunk_queue.put_nowait, chunk.text)
+                        
+                        # Signal done
+                        loop.call_soon_threadsafe(chunk_queue.put_nowait, None)
+                        
+                    except Exception as e:
+                        print(f"Thread Error: {e}")
+                        error_str = str(e)
+                        if "429" in error_str or "Resource exhausted" in error_str:
+                             loop.call_soon_threadsafe(chunk_queue.put_nowait, "⚠️ **High Traffic**: I am currently rate-limited by Google (429). Please wait 1 minute and try again.")
+                        else:
+                             loop.call_soon_threadsafe(chunk_queue.put_nowait, f"⚠️ Error: {str(e)}")
+                        
+                        # Signal done after sending error
+                        loop.call_soon_threadsafe(chunk_queue.put_nowait, None)
+
+                # Start the producer thread
+                executor = ThreadPoolExecutor(max_workers=1)
+                loop.run_in_executor(executor, producer_thread)
+
+                print(f"Generating content with model: gemini-2.5-flash (Threaded)")
+                
+                # Consume the queue
+                while True:
+                    # Wait for data (non-blocking)
+                    chunk_text = await chunk_queue.get()
+                    
+                    if chunk_text is None:
+                        print("DEBUG: Queue received None (Done signal)")
+                        break
+                        
+                    print(f"DEBUG: Queue received text: '{chunk_text}'")
+                    yield chunk_text
+
+                print("DEBUG: Stream finished (Generator exit).")
+                executor.shutdown(wait=False)
                 return
+
+            except Exception as e:
+                print(f"Stream error: {e}")
+                error_str = str(e)
+                if "429" in error_str or "Resource exhausted" in error_str:
+                    print("DEBUG: Hit Rate Limit (429). notifying user.")
+                    yield "⚠️ **High Traffic**: I am currently rate-limited by Google. Please wait 1 minute and try again."
+                    return
+                else:
+                    print(f"DEBUG: Unknown error: {e}")
+                    yield f"⚠️ Error: {str(e)}"
+                    return
             except Exception as e:
                 print(f"Stream error: {e}")
                 error_str = str(e)

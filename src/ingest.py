@@ -1,7 +1,7 @@
 import os
 import glob
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader, JSONLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
@@ -62,7 +62,7 @@ def ingest_docs():
     def find_files(ext):
         return glob.glob(os.path.join(DATA_PATH, f"**/*{ext}"), recursive=True)
     
-    all_files = find_files(".pdf") + find_files(".docx") + find_files(".doc") + find_files(".txt")
+    all_files = find_files(".pdf") + find_files(".docx") + find_files(".doc") + find_files(".txt") + find_files(".json")
     
     if not all_files:
         print("⚠️ No documents found.")
@@ -81,6 +81,8 @@ def ingest_docs():
                 loader = PyPDFLoader(file_path)
             elif file_path.endswith('.txt'):
                 loader = TextLoader(file_path, encoding='utf-8')
+            elif file_path.endswith('.json'):
+                loader = JSONLoader(file_path, jq_schema='.', text_content=False)
             else:
                 loader = UnstructuredWordDocumentLoader(file_path)
             
