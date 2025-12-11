@@ -781,9 +781,12 @@ async def home():
                     await new Promise(r => setTimeout(r, 100));
                 }
 
+                // Auto-speak ALL bot replies - TEMPORARILY DISABLED due to ElevenLabs error
+                // updateStatus('Speaking...');
+                // await speakResponse(displayedText);
+                
+                // Only return to listening if mic was used
                 if (isVoice && isListening) {
-                    updateStatus('Speaking...');
-                    await speakResponse(displayedText);
                     updateStatus('Listening...');
                 } else {
                     updateStatus('Ready');

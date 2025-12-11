@@ -16,7 +16,10 @@ def get_vectorstore():
     if not os.path.exists(DB_PATH):
         raise FileNotFoundError(f"Vector DB not found at {DB_PATH}. Please run ingest.py first.")
        
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004",
+        google_api_key=os.getenv("GOOGLE_API_KEY")
+    )
     vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
     return vectorstore
 
@@ -274,108 +277,57 @@ async def answer_question_stream(query: str, student_id: str = None):
         # We need this because LangChain's parser fails on Gemini 2.5 experimental fields
         # and sync calls block the server.
         
-        system_prompt = (
-            "You are JARVIS — a precise, reliable university assistant.\n"
-            "You answer questions using the provided context.\n\n"
-            "STRICT RULES:\n"
-            "1. NO HALLUCINATIONS. If not in context AND the user is asking for specific info, say 'I don't have that information'.\n"
-            "2. GREETINGS: If the user says 'hi', 'hello', or introduces themselves, reply politely and ask how you can help (you do NOT need context for this).\n"
-            "3. NO SOURCE FILENAMES in output.\n"
-            "4. Structure with bullet points.\n"
-            f"Context:\n{context}\n\n"
-            f"Question: {query}"
-        )
+        system_prompt = f"""You are JARVIS, a helpful university assistant.
+
+Use the context below to answer the question.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer clearly and directly."""
+
 
         for attempt in range(max_retries):
             try:
-                # Queue for communicating chunks from thread to async loop
-                chunk_queue = asyncio.Queue()
-                loop = asyncio.get_running_loop()
+                # Use Google Gemini API directly
+                import google.generativeai as genai
                 
-                # Worker function to run in separate thread
-                def producer_thread():
-                    try:
-                        import google.generativeai as genai
-                        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-                        model = genai.GenerativeModel('models/gemini-2.5-flash')
-                        
-                        print(f"DEBUG: Thread started for {model.model_name}")
-                        
-                        # Blocking call
-                        response = model.generate_content(system_prompt, stream=True)
-                        
-                        # Blocking iteration
-                        for chunk in response:
-                            if chunk.text:
-                                # Schedule putting data into queue (thread-safe for loop)
-                                loop.call_soon_threadsafe(chunk_queue.put_nowait, chunk.text)
-                        
-                        # Signal done
-                        loop.call_soon_threadsafe(chunk_queue.put_nowait, None)
-                        
-                    except Exception as e:
-                        print(f"Thread Error: {e}")
-                        error_str = str(e)
-                        if "429" in error_str or "Resource exhausted" in error_str:
-                             loop.call_soon_threadsafe(chunk_queue.put_nowait, "⚠️ **High Traffic**: I am currently rate-limited by Google (429). Please wait 1 minute and try again.")
-                        else:
-                             loop.call_soon_threadsafe(chunk_queue.put_nowait, f"⚠️ Error: {str(e)}")
-                        
-                        # Signal done after sending error
-                        loop.call_soon_threadsafe(chunk_queue.put_nowait, None)
-
-                # Start the producer thread
-                executor = ThreadPoolExecutor(max_workers=1)
-                loop.run_in_executor(executor, producer_thread)
-
-                print(f"Generating content with model: gemini-2.5-flash (Threaded)")
+                genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+                model = genai.GenerativeModel('models/gemini-2.5-flash')
                 
-                # Consume the queue
-                while True:
-                    # Wait for data (non-blocking)
-                    chunk_text = await chunk_queue.get()
-                    
-                    if chunk_text is None:
-                        print("DEBUG: Queue received None (Done signal)")
-                        break
-                        
-                    print(f"DEBUG: Queue received text: '{chunk_text}'")
-                    yield chunk_text
-
-                print("DEBUG: Stream finished (Generator exit).")
-                executor.shutdown(wait=False)
+                print(f"DEBUG: Using Google Gemini model: {model.model_name}")
+                
+                # Stream the response
+                response = model.generate_content(system_prompt, stream=True)
+                
+                for chunk in response:
+                    if chunk.text:
+                        yield chunk.text
+                
+                print("DEBUG: Stream finished successfully")
                 return
 
             except Exception as e:
                 print(f"Stream error: {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Full error details: {repr(e)}")
                 error_str = str(e)
-                if "429" in error_str or "Resource exhausted" in error_str:
-                    print("DEBUG: Hit Rate Limit (429). notifying user.")
-                    yield "⚠️ **High Traffic**: I am currently rate-limited by Google. Please wait 1 minute and try again."
+                if "429" in error_str or "rate" in error_str.lower():
+                    print("DEBUG: Hit Rate Limit. Notifying user.")
+                    yield f"⚠️ **High Traffic**: Rate limited. Error: {error_str}"
                     return
                 else:
-                    print(f"DEBUG: Unknown error: {e}")
+                    print(f"DEBUG: Error: {e}")
                     yield f"⚠️ Error: {str(e)}"
                     return
-            except Exception as e:
-                print(f"Stream error: {e}")
-                error_str = str(e)
-                if "429" in error_str or "Resource exhausted" in error_str:
-                    if attempt < max_retries - 1:
-                        import time
-                        time.sleep(retry_delay * (2 ** attempt))
-                        continue
-                    else:
-                        yield "I'm experiencing heavy traffic. Please ask again in a moment."
-                        return
-                else:
-                    raise e
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         yield f"I encountered an issue searching my database: {str(e)}"
-
+    
 # Alias for web_app compatibility
 # answer_question_stream = answer_question
 
