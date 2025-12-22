@@ -12,3 +12,7 @@ elevenlabs
 unstructured
 python-magic-bin
 langchain-openai
+langchain-ollama
+flashrank
+faiss-cpu
+sentence-transformers
