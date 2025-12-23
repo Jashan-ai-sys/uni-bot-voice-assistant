@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_ollama import OllamaEmbeddings, ChatOllama  # Local Ollama for embeddings and LLM
 
 # Load environment variables
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -9,14 +9,35 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 DB_PATH = os.path.join(BASE_DIR, "db")
 
+TIMETABLE_KEYWORDS = [
+    "class", "schedule", "timetable", "lecture", "practical", "tutorial", 
+    "monday", "tuesday", "wednesday", "thursday", "friday", 
+    "what time", "when is"
+]
+
+# Pre-load LLM globally for faster responses (no per-request initialization)
+
+LLM = ChatOllama(
+    model="phi3.5",
+    temperature=0.2,
+    top_p=0.9,
+    top_k=20,
+    num_predict=120,      # limits response length
+    num_ctx=2048,         # we only need 1200 chars of context
+    repeat_penalty=1.05,
+    repeat_last_n=20
+)
+
+
 def get_vectorstore():
     """
     Loads the persisted Chroma vector store.
     """
     if not os.path.exists(DB_PATH):
         raise FileNotFoundError(f"Vector DB not found at {DB_PATH}. Please run ingest.py first.")
-        
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    
+    # Use local embeddings - no API latency!
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
     vectorstore = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
     return vectorstore
 
@@ -25,7 +46,7 @@ def identify_intent(query: str) -> dict:
     Analyzes query to determine if strict metadata filtering should be applied.
     """
     query_lower = query.lower()
-    
+   
     # Map keywords to doc_type
     intent_map = {
         "map": "map",
@@ -44,13 +65,23 @@ def identify_intent(query: str) -> dict:
         "mess": "hostel",
         "laundry": "hostel",
         "room": "hostel",
-        "warden": "hostel"
+        "warden": "hostel", # Warden can be hostel context too
+        # Hospital / Medical Context - Now separate!
+        "hospital": "hospital",
+        "medical": "hospital",
+        "emergency": "hospital",
+        "ambulance": "hospital",
+        "doctor": "hospital",
+        
+        "bh1": "hostel", "bh2": "hostel", "bh3": "hostel", "bh4": "hostel",
+        "bh5": "hostel", "bh6": "hostel", "bh7": "hostel", "bh8": "hostel",
+        "gh1": "hostel", "gh2": "hostel", "gh3": "hostel", "gh4": "hostel"
     }
-    
+   
     for key, doc_type in intent_map.items():
         if key in query_lower:
             return {"doc_type": doc_type}
-            
+           
     return None
 
 def answer_question(query: str, student_id: str = None) -> str:
@@ -58,6 +89,11 @@ def answer_question(query: str, student_id: str = None) -> str:
     Answers a question using RAG based on the ingested documents.
     Features: Metadata filtering, intent detection, and enhanced citations.
     """
+    # Smalltalk / Greeting Bypass
+    greetings = ["hi", "hello", "hey", "yo", "sup", "hola", "greetings"]
+    if query.lower().strip() in greetings:
+        return "Hello! How can I help you today? 😊"
+
     # Check for timetable queries first
     timetable_keywords = ["class", "schedule", "timetable", "subject", "room", "lecture", "practical", "tutorial", "when", "where", "time", "monday", "tuesday", "wednesday", "thursday", "friday", "teacher", "what time", "when is"]
     is_timetable_query = any(keyword in query.lower() for keyword in timetable_keywords)
@@ -66,7 +102,7 @@ def answer_question(query: str, student_id: str = None) -> str:
         try:
             import user_storage
             import timetable_extractor
-            
+           
             if is_timetable_query:
                 print(f"📅 Checking timetable for student_id: {student_id}")
                 timetable_data = user_storage.get_user_timetable(student_id)
@@ -77,109 +113,66 @@ def answer_question(query: str, student_id: str = None) -> str:
                     return result
         except Exception as e:
             print(f"Timetable check error: {e}")
-    
+   
     # General RAG pipeline
     try:
         vectorstore = get_vectorstore()
-        
+       
         # Determine filters
         search_filter = identify_intent(query)
-        
-        # Search strategy
-        k_val = 8 if search_filter else 10 # More specific if filtered
-        
-        # Use MMR for diversity
-        docs = vectorstore.max_marginal_relevance_search(
-            query, 
+       
+        # Fast similarity search (HNSW optimized)
+        k_val = 5  # Increased from 3 to 5 for better recall
+        docs = vectorstore.similarity_search(
+            query=query,
             k=k_val,
-            filter=search_filter,
-            fetch_k=20,
-            lambda_mult=0.6 # slightly more diversity
+            filter=search_filter
         )
-        
-        # Construct context with citations
+       
+        # Construct context with citations - BALANCED (Speed + Quality)
         context_parts = []
         total_chars = 0
-        MAX_CTX_CHARS = 10000  # Cap context size
-        
+        MAX_CTX_CHARS = 1200  # Optimized for 2-3B models (reduced from 2000)
+       
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
-            citation = f"{source}"
-            content = f"Source: {citation}\nContent: {doc.page_content}"
-            
+            # Smart truncation: limit each document to 800 chars for more detail
+            page_content = doc.page_content[:800] + "..." if len(doc.page_content) > 800 else doc.page_content
+            content = f"[{source}]\n{page_content}"
+           
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
-                
+               
             context_parts.append(content)
             total_chars += len(content)
-        
+       
         context = "\n\n---\n\n".join(context_parts)
-        
+       
         if not context:
             return "I couldn't find any specific documents matching your query. Please try rephrasing."
 
         # LangChain Generation
         from langchain_core.prompts import ChatPromptTemplate
         from langchain_core.output_parsers import StrOutputParser
-        
-        llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
-        
-        template = """
-You are JARVIS — a precise, reliable university assistant.
-You answer ONLY using the information present in the provided context.
+       
+        # Use global pre-loaded LLM (no initialization overhead)
+        template = """You are JARVIS, a university assistant.
 
-====================================================
-🔒 RULES (STRICT — DO NOT VIOLATE)
-====================================================
-1. ❗ NO HALLUCINATIONS  
-   - If the answer is NOT found in context, reply exactly:  
-     "I don't have that information in my documents."
+You MUST answer ONLY using the information in the context.
+Do NOT guess.
+If the answer is not found, reply: "I don't have that information."
 
-2. ❗ NO SOURCE OR FILE NAMES  
-   - Never reveal document names, PDF names, metadata, or citation text.
-
-3. ❗ STAY WITHIN CONTEXT  
-   - Do NOT invent numbers, dates, fees, rules, policies, or map details.
-
-4. ❗ STRUCTURE EVERYTHING  
-   - ALWAYS use a clean, organized format:
-        - Bullet points
-        - Step-by-step lists
-        - Headings
-        - Tables (if needed)
-
-5. ❗ TONE  
-   - Friendly, clear, professional.
-   - No emojis *unless the user uses them first*.
-
-====================================================
-📌 HOW TO ANSWER
-====================================================
-ALWAYS follow this format:
-
-**Answer:**
-<your clear answer here>
-
-**If helpful, also include:**
-- Key points
-- Steps or instructions
-- Short summary
-
-====================================================
-📚 CONTEXT
-(Use ONLY the following information to answer)
-====================================================
+CONTEXT:
 {context}
 
-====================================================
-❓ USER QUESTION
-====================================================
+QUESTION:
 {query}
-"""
+
+ANSWER (short, factual, structured):
+(Format UMS paths like: Step 1 → Step 2 → Step 3)"""
         prompt = ChatPromptTemplate.from_template(template)
-        # We can just invoke the chain
-        chain = prompt | llm | StrOutputParser()
-        
+        chain = prompt | LLM | StrOutputParser()  # Use global LLM
+       
         # Simple invoke without extra retry logic wrapper for sync (LangChain has some built-in defaults)
         try:
             return chain.invoke({"context": context, "query": query})
@@ -188,7 +181,7 @@ ALWAYS follow this format:
             if "429" in error_str or "Resource exhausted" in error_str:
                 return "I'm experiencing heavy traffic. Please ask again in a moment."
             raise e
-        
+       
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -199,15 +192,21 @@ async def answer_question_stream(query: str, student_id: str = None):
     Streaming version of answer_question for real-time response generation.
     Yields chunks of text as they're generated.
     """
+    # Smalltalk / Greeting Bypass
+    greetings = ["hi", "hello", "hey", "yo", "sup", "hola", "greetings"]
+    if query.lower().strip() in greetings:
+        yield "Hello! How can I help you today? 😊"
+        return
+
     # Check for timetable queries first
-    timetable_keywords = ["class", "schedule", "timetable", "subject", "room", "lecture", "practical", "tutorial", "when", "where", "time", "monday", "tuesday", "wednesday", "thursday", "friday", "teacher", "what time", "when is"]
-    is_timetable_query = any(keyword in query.lower() for keyword in timetable_keywords)
+    # Check for timetable queries first
+    is_timetable_query = any(keyword in query.lower() for keyword in TIMETABLE_KEYWORDS)
 
     if student_id:
         try:
             import user_storage
             import timetable_extractor
-            
+           
             if is_timetable_query:
                 timetable_data = user_storage.get_user_timetable(student_id)
                 if timetable_data and timetable_data.get("schedule"):
@@ -219,137 +218,67 @@ async def answer_question_stream(query: str, student_id: str = None):
                     return
         except Exception as e:
             print(f"Timetable check error: {e}")
-    
+   
     # General RAG pipeline with streaming
     try:
         vectorstore = get_vectorstore()
-        
+       
         # Determine filters
         search_filter = identify_intent(query)
-        
-        # Search strategy
-        k_val = 8 if search_filter else 10
-        
-        # Use MMR for diversity
-        docs = vectorstore.max_marginal_relevance_search(
-            query, 
+       
+        # Fast similarity search (HNSW optimized)
+        k_val = 5  # Consistency with sync function
+        docs = vectorstore.similarity_search(
+            query=query,
             k=k_val,
-            filter=search_filter,
-            fetch_k=20,
-            lambda_mult=0.6
+            filter=search_filter
         )
-        
-        # Construct context
+       
+        # Construct context with citations 
         context_parts = []
         total_chars = 0
-        MAX_CTX_CHARS = 10000
-        
+        MAX_CTX_CHARS = 1200  # Optimized for 2-3B models
+       
         for doc in docs:
             source = doc.metadata.get('source', 'unknown')
-            citation = f"{source}"
-            content = f"Source: {citation}\nContent: {doc.page_content}"
-            
+            page_content = doc.page_content[:350] # Consistent chunk limit
+            content = f"[{source}]\n{page_content}"
+           
             if total_chars + len(content) > MAX_CTX_CHARS:
                 break
-                
+               
             context_parts.append(content)
             total_chars += len(content)
-        
+       
         context = "\n\n---\n\n".join(context_parts)
-        
+       
         if not context:
             yield "I couldn't find any specific documents matching your query. Please try rephrasing."
             return
 
-        # LangChain Generation
-        import os
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        from langchain_core.prompts import ChatPromptTemplate
-        from langchain_core.output_parsers import StrOutputParser
-        
-        llm = ChatGoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.getenv("GOOGLE_API_KEY"))
-        
-        template = """
-You are JARVIS — a precise, reliable university assistant.
-You answer ONLY using the information present in the provided context.
+        system_prompt = f"""You are JARVIS, a university assistant.
 
-====================================================
-🔒 RULES (STRICT — DO NOT VIOLATE)
-====================================================
-1. ❗ NO HALLUCINATIONS  
-   - If the answer is NOT found in context, reply exactly:  
-     "I don't have that information in my documents."
+You MUST answer ONLY using the information in the context.
+Do NOT guess.
+If the answer is not found, reply: "I don't have that information."
 
-2. ❗ NO SOURCE OR FILE NAMES  
-   - Never reveal document names, PDF names, metadata, or citation text.
-
-3. ❗ STAY WITHIN CONTEXT  
-   - Do NOT invent numbers, dates, fees, rules, policies, or map details.
-
-4. ❗ STRUCTURE EVERYTHING  
-   - ALWAYS use a clean, organized format:
-        - Bullet points
-        - Step-by-step lists
-        - Headings
-        - Tables (if needed)
-
-5. ❗ TONE  
-   - Friendly, clear, professional.
-   - No emojis *unless the user uses them first*.
-
-====================================================
-📌 HOW TO ANSWER
-====================================================
-ALWAYS follow this format:
-
-**Answer:**
-<your clear answer here>
-
-**If helpful, also include:**
-- Key points
-- Steps or instructions
-- Short summary
-
-====================================================
-📚 CONTEXT
-(Use ONLY the following information to answer)
-====================================================
+CONTEXT:
 {context}
 
-====================================================
-❓ USER QUESTION
-====================================================
+QUESTION:
 {query}
-"""
-        prompt = ChatPromptTemplate.from_template(template)
-        pass_through_chain = prompt | llm | StrOutputParser()
 
-        # Retry logic for rate limits
-        max_retries = 10
-        retry_delay = 4
+ANSWER (short, factual, structured):
+(Format UMS paths like: Step 1 → Step 2 → Step 3)"""
 
-        for attempt in range(max_retries):
-            try:
-                print(f"Generating content with model: {llm.model}")
-                for chunk in pass_through_chain.stream({"context": context, "query": query}):
-                    print(f"Chunk received: {chunk}")
-                    if chunk:
-                        yield chunk
-                print("Stream finished.")
-                return
-            except Exception as e:
-                print(f"Stream error: {e}")
-                error_str = str(e)
-                if "429" in error_str or "Resource exhausted" in error_str:
-                    if attempt < max_retries - 1:
-                        import time
-                        time.sleep(retry_delay * (2 ** attempt))
-                        continue
-                    else:
-                        yield "I'm experiencing heavy traffic. Please ask again in a moment."
-                        return
-                else:
-                    raise e
+        # Stream directly using global LLM
+        try:
+            for chunk in LLM.stream(system_prompt):
+                if hasattr(chunk, 'content') and chunk.content:
+                    yield chunk.content
+        except Exception as e:
+            print(f"Stream error: {e}")
+            yield f"⚠️ Error generating response: {str(e)}"
 
     except Exception as e:
         import traceback

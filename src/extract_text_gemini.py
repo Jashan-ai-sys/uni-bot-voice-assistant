@@ -28,7 +28,7 @@ def extract_text_with_gemini():
         return
 
     print("🧠 Extracting text...")
-    model = genai.GenerativeModel('models/gemini-2.0-flash')
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
     
     response = model.generate_content([
         "Extract all text from this document exactly as it appears. Preserve phone numbers and names.",

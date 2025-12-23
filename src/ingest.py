@@ -1,9 +1,9 @@
 import os
 import glob
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader, JSONLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_ollama import OllamaEmbeddings  # Local embeddings
 from langchain_chroma import Chroma
 import time
 import uuid
@@ -31,6 +31,7 @@ def get_doc_type(file_path):
         "admissions": "regulation",
         "exams": "regulation",
         "hostel": "hostel",
+        "hospital": "hospital",
         "users": "user_data"
     }
     
@@ -39,15 +40,10 @@ def get_doc_type(file_path):
 def get_chunk_size(doc_type):
     """
     Returns optimal chunk size for the document type.
+    Standardized to 300/40 for all types for consistent performance.
     """
-    if doc_type == "map":
-        return 350, 50 
-    elif doc_type == "regulation":
-        return 800, 100
-    elif doc_type == "hostel":
-        return 600, 100
-    else:
-        return 500, 100
+    # Use unified strategy for all types including hospital
+    return 300, 40
 
 def ingest_docs():
     """
@@ -62,7 +58,7 @@ def ingest_docs():
     def find_files(ext):
         return glob.glob(os.path.join(DATA_PATH, f"**/*{ext}"), recursive=True)
     
-    all_files = find_files(".pdf") + find_files(".docx") + find_files(".doc") + find_files(".txt")
+    all_files = find_files(".pdf") + find_files(".docx") + find_files(".doc") + find_files(".txt") + find_files(".json")
     
     if not all_files:
         print("⚠️ No documents found.")
@@ -70,9 +66,8 @@ def ingest_docs():
 
     print(f"📄 Found {len(all_files)} document(s). Processing...")
     
-    # Store docs by recommended chunk size for batch processing
-    # Key: (chunk_size, chunk_overlap) -> List[Document]
-    docs_by_strategy = {}
+    # 1a. Load All Documents
+    all_loaded_docs = []
     
     for file_path in all_files:
         try:
@@ -81,6 +76,8 @@ def ingest_docs():
                 loader = PyPDFLoader(file_path)
             elif file_path.endswith('.txt'):
                 loader = TextLoader(file_path, encoding='utf-8')
+            elif file_path.endswith('.json'):
+                loader = JSONLoader(file_path, jq_schema='.', text_content=False)
             else:
                 loader = UnstructuredWordDocumentLoader(file_path)
             
@@ -88,47 +85,34 @@ def ingest_docs():
             
             # Enrich Metadata
             doc_type = get_doc_type(file_path)
-            strategy = get_chunk_size(doc_type)
             
             for doc in loaded_docs:
                 doc.metadata['source'] = os.path.basename(file_path)
                 doc.metadata['doc_type'] = doc_type
-                # Page number is usually auto-added by PyPDFLoader as 'page'
                 
-            if strategy not in docs_by_strategy:
-                docs_by_strategy[strategy] = []
-            docs_by_strategy[strategy].extend(loaded_docs)
-            
+            all_loaded_docs.extend(loaded_docs)
             print(f"  - Loaded: {os.path.basename(file_path)} [{doc_type}]")
             
         except Exception as e:
             print(f"  - Error loading {file_path}: {e}")
-
-    # 2. Split Documents
-    all_chunks = []
     
-    print("✂️ Splitting documents with variable strategies...")
-    for (chunk_size, chunk_overlap), docs in docs_by_strategy.items():
-        if not docs: continue
-        
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size, 
-            chunk_overlap=chunk_overlap
-        )
-        chunks = splitter.split_documents(docs)
-        all_chunks.extend(chunks)
-        print(f"  - Strategy ({chunk_size}/{chunk_overlap}): Created {len(chunks)} chunks from {len(docs)} pages.")
-
+    # 2. Split Documents (Unified Strategy)
+    print("✂️ Splitting documents (300 chars / 40 overlap)...")
+    
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=300, 
+        chunk_overlap=40
+    )
+    
+    # Split the loaded docs
+    all_chunks = splitter.split_documents(all_loaded_docs)
     print(f"🧩 Total chunks created: {len(all_chunks)}")
 
     # 3. Create Embeddings & Store in Chroma
     print("💾 Creating embeddings and storing...")
     
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("❌ GOOGLE_API_KEY missing.")
-        return
-
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    # Use local embeddings - no API calls!
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
     
     if os.path.exists(DB_PATH):
         import shutil
@@ -137,12 +121,13 @@ def ingest_docs():
 
     vectorstore = Chroma(
         persist_directory=DB_PATH,
-        embedding_function=embeddings
+        embedding_function=embeddings,
+        collection_metadata={"hnsw:space": "cosine"}  # HNSW for fast search
     )
 
     # Batch process
-    BATCH_SIZE = 10 
-    print(f"⏳ Processing {len(all_chunks)} chunks...")
+    BATCH_SIZE = 100  # Increased for speed
+    print(f"⏳ Processing {len(all_chunks)} chunks (Batch size: {BATCH_SIZE})...")
     
     for i in range(0, len(all_chunks), BATCH_SIZE):
         batch = all_chunks[i:i + BATCH_SIZE]
@@ -151,7 +136,7 @@ def ingest_docs():
         try:
             vectorstore.add_documents(documents=batch, ids=ids)
             print(f"  - Processed batch {i//BATCH_SIZE + 1}/{(len(all_chunks) + BATCH_SIZE - 1)//BATCH_SIZE}")
-            time.sleep(1)
+            # Removed sleep for performance
         except Exception as e:
             print(f"  - Error processing batch: {e}")
     
