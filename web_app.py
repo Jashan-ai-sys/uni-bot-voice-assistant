@@ -21,6 +21,7 @@ import src.timetable_extractor as timetable_extractor
 load_dotenv()
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 from elevenlabs import ElevenLabs
@@ -80,6 +81,7 @@ async def home():
             padding: 0 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             z-index: 100;
+            border-bottom: 5px solid #f47920;
         }
 
         .logo-section {
@@ -223,6 +225,9 @@ async def home():
         .card-header {
             padding: 15px 20px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-top: 5px solid #f47920;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -563,8 +568,9 @@ async def home():
     <!-- Header -->
     <div class="ums-header">
         <div class="logo-section">
+            <img src="/static/lpu_logo.png" alt="LPU Logo" style="height: 50px; width: 50px; object-fit: contain; margin-right: 2px;">
             <div class="ums-logo-text"><span>U</span>MS</div>
-            <div style="display:flex; flex-direction:column; margin-left:10px;">
+            <div style="display:flex; flex-direction:column; margin-left:5px;">
                 <span style="font-weight:800; font-size:15px; color:#222;">UNIVERSITY MANAGEMENT SYSTEM</span>
                 <span class="sub-text">AI ASSISTANT PORTAL</span>
             </div>
@@ -581,7 +587,7 @@ async def home():
             <div class="chat-card" style="flex: 2; height: 100%;">
                 <div class="card-header">
                     <div class="card-title">
-                        <span>🤖</span> AI Assistant Interface
+                        LPU CHATBOT
                     </div>
                 </div>
 
@@ -592,8 +598,16 @@ async def home():
                 </div>
 
                 <div class="chat-input-area">
-                    <button onclick="openTimetableModal()" style="border:none; background:none; cursor:pointer; color:#777;" title="Upload Timetable">
-                        <span style="font-size:20px;">📅</span>
+                    <button onclick="openTimetableModal()" style="border:none; background:none; cursor:pointer; color:#777; padding: 5px;" title="Upload Timetable">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#ff6b6b" stroke="#d63031"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6" stroke="#555" stroke-width="3"></line>
+                            <line x1="8" y1="2" x2="8" y2="6" stroke="#555" stroke-width="3"></line>
+                            <line x1="3" y1="9" x2="21" y2="9" stroke="#d63031" stroke-width="2"></line>
+                            <rect x="7" y="13" width="3" height="3" fill="white"></rect>
+                            <rect x="14" y="13" width="3" height="3" fill="white"></rect>
+                            <rect x="7" y="17" width="3" height="3" fill="white"></rect>
+                        </svg>
                     </button>
                     
                     <div class="input-group">
@@ -610,12 +624,8 @@ async def home():
             </div>
 
             <!-- RIGHT PANEL - PARTICLE SPHERE -->
-            <div class="particle-panel" style="flex: 1; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; overflow: hidden; border-top: 4px solid #f47920; display: flex; align-items: center; justify-content: center; min-width: 300px;">
+            <div class="particle-panel" style="flex: 1; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; overflow: hidden; border-top: 5px solid #f47920; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; align-items: center; justify-content: center; min-width: 300px;">
                 <div id="canvas-container" style="width: 100%; height: 100%; position: absolute; top:0; left:0;"></div>
-                <div style="z-index: 10; text-align: center; pointer-events: none;">
-                    <div style="font-weight: 700; color: #f47920; font-size: 18px; margin-bottom: 5px;">Interactive Voice Core</div>
-                    <div style="font-size: 12px; color: #888;">Powered by Three.js</div>
-                </div>
             </div>
 
         </div>
@@ -675,8 +685,8 @@ async def home():
             const positions = new Float32Array(particleCount * 3);
             const colors = new Float32Array(particleCount * 3);
 
-            const color1 = new THREE.Color(0xf47920); // UMS Orange
-            const color2 = new THREE.Color(0xffffff); // White
+            const color1 = new THREE.Color(0xd67419); // Dark Orange Golden
+            const color2 = new THREE.Color(0xd67419); // Dark Orange Golden
 
             for (let i = 0; i < particleCount; i++) {
                 const phi = Math.acos(-1 + (2 * i) / particleCount);
@@ -687,10 +697,9 @@ async def home():
                 positions[i * 3 + 1] = r * Math.sin(theta) * Math.sin(phi);
                 positions[i * 3 + 2] = r * Math.cos(phi);
 
-                const mixedColor = color1.clone().lerp(color2, Math.random());
-                colors[i * 3] = mixedColor.r;
-                colors[i * 3 + 1] = mixedColor.g;
-                colors[i * 3 + 2] = mixedColor.b;
+                colors[i * 3] = color1.r;
+                colors[i * 3 + 1] = color1.g;
+                colors[i * 3 + 2] = color1.b;
             }
 
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
