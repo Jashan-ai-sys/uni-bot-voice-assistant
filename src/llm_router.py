@@ -30,8 +30,10 @@ def get_llm():
     
     # Fallback / Default to Local
     print(f"💻 Router: Using Local (Ollama: {LOCAL_LLM_MODEL})", file=sys.stderr)
+    import os
     _LLM_INSTANCE = ChatOllama(
         model=LOCAL_LLM_MODEL,
+        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         temperature=0.1,
         top_p=0.9,
         num_ctx=1024,
