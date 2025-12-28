@@ -1,14 +1,20 @@
 import asyncio
 import json
 import logging
+import sys
+import os
 from typing import List, Dict, Any
+
+# Fix path for standalone execution
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from src.llm_router import get_llm
 
 # Import our MCP Client
-from mcp_client import UniMcpClient
+from src.mcp_client import UniMcpClient
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -165,12 +171,13 @@ Action Input: {{"student_id": "12345", "context": "exam"}}
                     for c in result_obj.content:
                         if c.type == 'text':
                             observation += c.text + "\n"
-                            
-                    print(f"Observation: {observation.strip()[:200]}...") # Print preview
                     
                     # Feed back to LLM
                     obs_msg = f"Observation: {observation}"
                     self.history.append(HumanMessage(content=obs_msg))
+                    
+                    print(f"✅ Tool executed. Observation added to history.") # Debug
+                    print(f"📝 Continuing loop to let LLM generate final answer...") # Debug
                     
                     # Continue loop to let LLM interpret observation
                     continue

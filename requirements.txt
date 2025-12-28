@@ -22,4 +22,5 @@ pydantic
 pydantic-settings
 pinecone-client
 langchain-pinecone
+langchain-google-genai
         

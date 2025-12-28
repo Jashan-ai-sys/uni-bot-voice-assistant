@@ -25,6 +25,12 @@ CLOUD_LLM_MODEL = "llama-3.1-8b-instant" # Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "uni-bot-index")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# --- EMBEDDING PROVIDER ---
+
+EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "huggingface")  # or "gemini"
+
 
 # --- SETTINGS ---
 MAX_CONTEXT_CHARS = 1200
