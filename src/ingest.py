@@ -38,8 +38,11 @@ def get_doc_type(file_path):
         "academics": "regulation",
         "admissions": "regulation",
         "exams": "regulation",
+        "hospital": "hospital",
         "hostel": "hostel",
-        "users": "user_data"
+        "maps": "map",
+        "users": "user_data",
+        "navigation": "navigation"
     }
     
     return keyword_map.get(parent_dir.lower(), "general")

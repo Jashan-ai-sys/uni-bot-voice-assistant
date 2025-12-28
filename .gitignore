@@ -3,6 +3,7 @@
 __pycache__/
 db/
 data/
+!data/users/12345/
 *.pyc
 *.mp3
 debug_output.txt

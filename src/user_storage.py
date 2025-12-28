@@ -73,3 +73,13 @@ def save_user_timetable_pdf(student_id: str, pdf_content: bytes) -> str:
         f.write(pdf_content)
     
     return pdf_path
+    
+    return pdf_path
+
+def get_academic_record(student_id: str) -> Optional[Dict[str, Any]]:
+    """Get academic record (attendance, fees, exam status)"""
+    record_path = os.path.join(USER_DATA_DIR, student_id, "academic_record.json")
+    if os.path.exists(record_path):
+        with open(record_path, 'r') as f:
+            return json.load(f)
+    return None
