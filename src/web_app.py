@@ -23,7 +23,19 @@ import traceback
 
 load_dotenv()
 
+
 app = FastAPI()
+
+# Add CORS middleware to allow frontend requests
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify your Vercel domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Ensure static exists
 if not os.path.exists("static"):
     os.makedirs("static")
@@ -248,7 +260,7 @@ async def ask(request: Request):
 async def ask_stream(request: Request):
     from fastapi.responses import StreamingResponse
     import json
-    from src.rag_pipeline import answer_question_stream
+    from src.llm_agent import UniAgent
     
     data = await request.json()
     question = data.get("question", "")
@@ -256,7 +268,8 @@ async def ask_stream(request: Request):
     
     async def generate():
         try:
-            async for chunk in answer_question_stream(question, student_id):
+            agent = UniAgent()
+            async for chunk in agent.process_query_stream(question, student_id):
                 yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
             yield f"data: {json.dumps({'done': True})}\\n\\n"
         except Exception as e:

@@ -182,6 +182,96 @@ Action Input: {{"student_id": "12345", "context": "exam"}}
             # If no action, we are done
             break
 
+    async def process_query_stream(self, query: str, student_id: str = None):
+        """
+        Process a single query with streaming response (for FastAPI integration).
+        Yields text chunks as the agent thinks and responds.
+        
+        Args:
+            query: User's question
+            student_id: Optional student ID for personalized queries
+        """
+        async with UniMcpClient() as mcp:
+            # 1. Discover Tools
+            tools = await mcp.get_tools()
+            
+            # 2. Build Prompt (inject student_id if provided)
+            system_msg = SystemMessage(content=self._build_system_prompt(tools))
+            
+            # Add context about student ID if provided
+            if student_id:
+                query = f"[Student ID: {student_id}] {query}"
+            
+            self.history = [system_msg, HumanMessage(content=query)]
+            
+            # 3. Run agent loop with streaming
+            for step_num in range(3):  # Limit steps
+                # Invoke LLM
+                response = self.llm.invoke(self.history)
+                content = response.content
+                
+                self.history.append(AIMessage(content=content))
+                
+                # Check for tool call
+                if "Action:" in content:
+                    try:
+                        # Parse tool call
+                        lines = content.split('\n')
+                        action_line = next(line for line in lines if "Action:" in line)
+                        tool_name = action_line.split("Action:", 1)[1].strip()
+                        
+                        if "Action Input:" not in content:
+                            yield f"❌ Error: Invalid action format\n"
+                            break
+                        
+                        input_segment = content.split("Action Input:", 1)[1].strip()
+                        
+                        # Extract JSON
+                        def extract_json(s):
+                            s = s.strip()
+                            if "```" in s:
+                                s = s.split("```")[1]
+                                if s.startswith("json"): s = s[4:]
+                            s = s.strip()
+                            start = s.find('{')
+                            end = s.rfind('}')
+                            if start != -1 and end != -1:
+                                s = s[start:end+1]
+                            return json.loads(s)
+                        
+                        args = extract_json(input_segment)
+                        
+                        # Notify user of tool use
+                        yield f"🔍 [Using {tool_name}...]\n"
+                        
+                        # Execute tool
+                        result_obj = await mcp.call_tool(tool_name, args)
+                        
+                        # Extract observation
+                        observation = ""
+                        for c in result_obj.content:
+                            if c.type == 'text':
+                                observation += c.text + "\n"
+                        
+                        # Feed back to history
+                        self.history.append(HumanMessage(content=f"Observation: {observation}"))
+                        
+                        # Continue loop for final answer
+                        continue
+                        
+                    except Exception as e:
+                        yield f"❌ Tool error: {str(e)}\n"
+                        break
+                else:
+                    # No tool call - this is the final answer
+                    # Stream it word by word for better UX
+                    words = content.split()
+                    for i, word in enumerate(words):
+                        yield word + (" " if i < len(words) - 1 else "")
+                        await asyncio.sleep(0.01)  # Simulated streaming delay
+                    break
+
+
 if __name__ == "__main__":
     agent = UniAgent()
     try:
