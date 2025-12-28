@@ -3,12 +3,7 @@ import sys
 import time
 from functools import lru_cache
 
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_core.documents import Document
-from flashrank import Ranker, RerankRequest
-
-# --- MODULE IMPORTS (Refactored) ---
+# Imports moved to lazy loader to prevent timeout
 from src.config import (
     DB_PATH, EMBED_MODEL_NAME, RERANK_MODEL_NAME, 
     MAX_CONTEXT_CHARS, RERANK_THRESHOLD, RETRIEVAL_K, CACHE_DIR,
@@ -48,6 +43,7 @@ def _lazy_load_resources():
 
     # 1. Reranker
     try:
+        from flashrank import Ranker, RerankRequest
         RERANKER = Ranker(model_name=RERANK_MODEL_NAME, cache_dir=CACHE_DIR)
     except Exception:
         RERANKER = None 
@@ -55,6 +51,7 @@ def _lazy_load_resources():
 
     # 2. Embeddings
     try:
+        from langchain_community.embeddings import HuggingFaceEmbeddings
         _raw_embeddings = HuggingFaceEmbeddings(
             model_name=EMBED_MODEL_NAME,
             model_kwargs={'device': 'cpu'},
@@ -142,6 +139,7 @@ def retrieve_context(query: str) -> str:
             {"id": str(i), "text": doc.page_content, "meta": doc.metadata} 
             for i, (doc, score) in enumerate(scores_and_docs)
         ]
+        from flashrank import RerankRequest
         rerank_request = RerankRequest(query=query, passages=passages)
         results = RERANKER.rerank(rerank_request)
         final_docs_content = [res['text'] for res in results[:2]]
