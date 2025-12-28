@@ -31,37 +31,56 @@ class CachedEmbeddingsWrapper:
     def __call__(self, text: str) -> list[float]:
         return self.embed_query(text)
 
-# --- GLOBAL RESOURCES ---
-print("⏳ RAG Pipeline: Loading Resources...", file=sys.stderr)
-start_load = time.time()
+# --- LAZY RESOURCES ---
+RERANKER = None
+EMBEDDINGS = None
+VECTORSTORE = None
+_RESOURCES_LOADED = False
 
-# 1. Reranker
-try:
-    RERANKER = Ranker(model_name=RERANK_MODEL_NAME, cache_dir=CACHE_DIR)
-except Exception:
-    # Fallback if offline/download issues
-    RERANKER = None 
-    print("⚠️ Reranker failed to load. Proceeding without it.", file=sys.stderr)
+def _lazy_load_resources():
+    global RERANKER, EMBEDDINGS, VECTORSTORE, _RESOURCES_LOADED
+    if _RESOURCES_LOADED:
+        return
 
-# 2. Embeddings
-_raw_embeddings = HuggingFaceEmbeddings(
-    model_name=EMBED_MODEL_NAME,
-    model_kwargs={'device': 'cpu'},
-    encode_kwargs={'normalize_embeddings': True}
-)
-EMBEDDINGS = CachedEmbeddingsWrapper(_raw_embeddings)
+    print("⏳ RAG Pipeline: Loading Resources (Lazy)...", file=sys.stderr)
+    start_load = time.time()
 
-# 3. Vector Store
-if os.path.exists(DB_PATH):
-    VECTORSTORE = FAISS.load_local(
-        DB_PATH, 
-        EMBEDDINGS, 
-        allow_dangerous_deserialization=True
-    )
-    print(f"✅ FAISS Index Loaded ({time.time() - start_load:.2f}s)", file=sys.stderr)
-else:
-    print("⚠️ FAISS Index not found.", file=sys.stderr)
-    VECTORSTORE = None
+    # 1. Reranker
+    try:
+        RERANKER = Ranker(model_name=RERANK_MODEL_NAME, cache_dir=CACHE_DIR)
+    except Exception:
+        RERANKER = None 
+        print("⚠️ Reranker failed to load. Proceeding without it.", file=sys.stderr)
+
+    # 2. Embeddings
+    try:
+        _raw_embeddings = HuggingFaceEmbeddings(
+            model_name=EMBED_MODEL_NAME,
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
+        EMBEDDINGS = CachedEmbeddingsWrapper(_raw_embeddings)
+    except Exception as e:
+        print(f"⚠️ Embeddings failed to load: {e}", file=sys.stderr)
+        EMBEDDINGS = None
+
+    # 3. Vector Store
+    if os.path.exists(DB_PATH) and EMBEDDINGS:
+        try:
+            VECTORSTORE = FAISS.load_local(
+                DB_PATH, 
+                EMBEDDINGS, 
+                allow_dangerous_deserialization=True
+            )
+            print(f"✅ FAISS Index Loaded ({time.time() - start_load:.2f}s)", file=sys.stderr)
+        except Exception as e:
+             print(f"⚠️ FAISS Load Error: {e}", file=sys.stderr)
+             VECTORSTORE = None
+    else:
+        print("⚠️ FAISS Index not found or Embeddings failed.", file=sys.stderr)
+        VECTORSTORE = None
+    
+    _RESOURCES_LOADED = True
 
 
 # --- HELPER: INTENT ---
@@ -87,6 +106,9 @@ def retrieve_context(query: str) -> str:
     Core Retrieval Function used by MCP Server.
     """
     search_filter = identify_intent(query)
+    
+    # Init Resources if needed
+    _lazy_load_resources()
     
     if not VECTORSTORE:
         return ""
