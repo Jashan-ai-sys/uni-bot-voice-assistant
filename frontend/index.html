@@ -209,8 +209,7 @@
             </div>
             <div class="chat-input-area">
                 <div class="input-group">
-                    <input id="chatInput" class="chat-input" placeholder="Type your query..."
-                        onkeydown="if(event.key==='Enter') sendMessage()">
+                    <input id="chatInput" class="chat-input" placeholder="Type your query...">
                 </div>
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
@@ -287,6 +286,14 @@
                 botDiv.innerHTML = "Error: " + e.message + "<br><br><em>(Check Backend URL)</em>";
             }
         }
+
+        // Enter key support
+        document.getElementById('chatInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
 
         // Voice Logic
         let recognition;
