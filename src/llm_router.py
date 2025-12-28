@@ -14,11 +14,28 @@ def get_llm():
     if _LLM_INSTANCE is not None:
         return _LLM_INSTANCE
 
-    # Routing Logic
+    # Routing Logic (Priority: T4 GPU → Groq → Local Ollama)
+    import os
+    ollama_url = os.getenv("OLLAMA_BASE_URL")
+    
+    # 1. PRIMARY: Colab T4 GPU via Ngrok (if configured)
+    if ollama_url:
+        print(f"🎮 Router: Using T4 GPU (Ollama via Ngrok: {ollama_url})", file=sys.stderr)
+        _LLM_INSTANCE = ChatOllama(
+            model=LOCAL_LLM_MODEL,
+            base_url=ollama_url,
+            temperature=0.1,
+            top_p=0.9,
+            num_ctx=1024,
+            keep_alive="1h"
+        )
+        return _LLM_INSTANCE
+    
+    # 2. FALLBACK: Groq Cloud API (fast, free tier)
     if GROQ_API_KEY:
         try:
             from langchain_groq import ChatGroq
-            print(f"☁️ Router: Switching to Cloud (Groq: {CLOUD_LLM_MODEL})", file=sys.stderr)
+            print(f"☁️ Router: Using Cloud (Groq: {CLOUD_LLM_MODEL})", file=sys.stderr)
             _LLM_INSTANCE = ChatGroq(
                 model=CLOUD_LLM_MODEL,
                 temperature=0.1,
@@ -28,12 +45,11 @@ def get_llm():
         except ImportError:
             print("⚠️ Router: langchain-groq not found. Falling back to Local.", file=sys.stderr)
     
-    # Fallback / Default to Local
-    print(f"💻 Router: Using Local (Ollama: {LOCAL_LLM_MODEL})", file=sys.stderr)
-    import os
+    # 3. LAST RESORT: Local Ollama (if running on same machine)
+    print(f"💻 Router: Using Local Ollama ({LOCAL_LLM_MODEL})", file=sys.stderr)
     _LLM_INSTANCE = ChatOllama(
         model=LOCAL_LLM_MODEL,
-        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        base_url="http://localhost:11434",
         temperature=0.1,
         top_p=0.9,
         num_ctx=1024,
@@ -41,3 +57,4 @@ def get_llm():
     )
     
     return _LLM_INSTANCE
+

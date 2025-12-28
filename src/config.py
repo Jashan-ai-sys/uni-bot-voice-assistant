@@ -18,7 +18,7 @@ EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 RERANK_MODEL_NAME = "ms-marco-MiniLM-L-12-v2"
 
 # LLMs
-LOCAL_LLM_MODEL = "gemma2:2b"
+LOCAL_LLM_MODEL = "llama3.1:8b"  # Q4 quantized, optimized for T4 GPU
 CLOUD_LLM_MODEL = "llama-3.1-8b-instant" # Groq
 
 # --- API KEYS ---
