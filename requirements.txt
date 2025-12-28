@@ -20,3 +20,6 @@ python-magic
 unstructured
 pydantic
 pydantic-settings
+pinecone-client
+langchain-pinecone
+        

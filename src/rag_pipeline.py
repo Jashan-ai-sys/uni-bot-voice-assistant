@@ -11,7 +11,8 @@ from flashrank import Ranker, RerankRequest
 # --- MODULE IMPORTS (Refactored) ---
 from src.config import (
     DB_PATH, EMBED_MODEL_NAME, RERANK_MODEL_NAME, 
-    MAX_CONTEXT_CHARS, RERANK_THRESHOLD, RETRIEVAL_K, CACHE_DIR
+    MAX_CONTEXT_CHARS, RERANK_THRESHOLD, RETRIEVAL_K, CACHE_DIR,
+    PINECONE_API_KEY, PINECONE_INDEX_NAME
 )
 from src.llm_router import get_llm
 from src import cache_manager, user_storage, timetable_extractor
@@ -64,20 +65,26 @@ def _lazy_load_resources():
         print(f"⚠️ Embeddings failed to load: {e}", file=sys.stderr)
         EMBEDDINGS = None
 
-    # 3. Vector Store
-    if os.path.exists(DB_PATH) and EMBEDDINGS:
+    # 3. Vector Store (Pinecone)
+    global VECTORSTORE
+    if EMBEDDINGS and PINECONE_API_KEY:
         try:
-            VECTORSTORE = FAISS.load_local(
-                DB_PATH, 
-                EMBEDDINGS, 
-                allow_dangerous_deserialization=True
+            from langchain_pinecone import PineconeVectorStore
+            from pinecone import Pinecone
+            
+            # Init Client to check connection (optional but good for debugging)
+            pc = Pinecone(api_key=PINECONE_API_KEY)
+            
+            VECTORSTORE = PineconeVectorStore(
+                index_name=PINECONE_INDEX_NAME, 
+                embedding=EMBEDDINGS
             )
-            print(f"✅ FAISS Index Loaded ({time.time() - start_load:.2f}s)", file=sys.stderr)
+            print(f"✅ Pinecone Index '{PINECONE_INDEX_NAME}' Connected ({time.time() - start_load:.2f}s)", file=sys.stderr)
         except Exception as e:
-             print(f"⚠️ FAISS Load Error: {e}", file=sys.stderr)
+             print(f"⚠️ Pinecone Connection Error: {e}", file=sys.stderr)
              VECTORSTORE = None
     else:
-        print("⚠️ FAISS Index not found or Embeddings failed.", file=sys.stderr)
+        print("⚠️ Pinecone Config Missing (API Key or Embeddings).", file=sys.stderr)
         VECTORSTORE = None
     
     _RESOURCES_LOADED = True
