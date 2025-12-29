@@ -21,15 +21,16 @@ logging.basicConfig(filename=LOG_PATH, level=logging.INFO,
 
 logging.info("🚀 MCP Server Starting...")
 
-# CRITICAL: Pre-load resources to prevent blocking during tool calls
-logging.info("📦 Pre-loading RAG resources...")
-try:
-    from src.rag_pipeline import _lazy_load_resources
-    _lazy_load_resources()
-    logging.info("✅ Resources loaded successfully")
-except Exception as e:
-    logging.error(f"❌ Failed to pre-load resources: {e}")
-    # Continue anyway - will lazy load on first call
+# DISABLED for Render memory limits (512MB free tier)
+# Pre-loading uses ~200MB at startup. Lazy loading on first request is better for production.
+# logging.info("📦 Pre-loading RAG resources...")
+# try:
+#     from src.rag_pipeline import _lazy_load_resources
+#     _lazy_load_resources()
+#     logging.info("✅ Resources loaded successfully")
+# except Exception as e:
+#     logging.error(f"❌ Failed to pre-load resources: {e}")
+#     # Continue anyway - will lazy load on first call
 
 @mcp.tool()
 def search_documents(query: str) -> str:

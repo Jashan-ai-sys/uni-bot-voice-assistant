@@ -34,20 +34,33 @@ VECTORSTORE = None
 _RESOURCES_LOADED = False
 
 def _lazy_load_resources():
+    """Lazy load heavy ML models only when needed"""
     global RERANKER, EMBEDDINGS, VECTORSTORE, _RESOURCES_LOADED
     if _RESOURCES_LOADED:
         return
-
-    print("⏳ RAG Pipeline: Loading Resources (Lazy)...", file=sys.stderr)
+        
+    print("⏳ RAG Pipeline: Loading resources...", file=sys.stderr)
     start_load = time.time()
 
-    # 1. Reranker
-    try:
-        from flashrank import Ranker, RerankRequest
-        RERANKER = Ranker(model_name=RERANK_MODEL_NAME, cache_dir=CACHE_DIR)
-    except Exception:
-        RERANKER = None 
-        print("⚠️ Reranker failed to load. Proceeding without it.", file=sys.stderr)
+    # Import config and dependencies here to avoid loading at module import time
+    from src.config import SKIP_RERANKER, RERANK_MODEL_NAME, CACHE_DIR
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_pinecone import PineconeVectorStore
+    from pinecone import Pinecone
+    
+    # 1. Reranker (Optional - can be disabled to save memory)
+
+    if not SKIP_RERANKER:
+        try:
+            from flashrank import Ranker
+            RERANKER = Ranker(model_name=RERANK_MODEL_NAME, cache_dir=CACHE_DIR)
+            print("✅ Reranker loaded", file=sys.stderr)
+        except Exception as e:
+            print(f"⚠️ Reranker failed to load: {e}", file=sys.stderr)
+            RERANKER = None
+    else:
+        RERANKER = None
+        print("⚠️ Reranker disabled (SKIP_RERANKER=true)", file=sys.stderr)
 
     # 2. Embeddings
     try:

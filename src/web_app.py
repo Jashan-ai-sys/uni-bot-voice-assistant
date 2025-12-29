@@ -260,7 +260,7 @@ async def ask(request: Request):
 async def ask_stream(request: Request):
     from fastapi.responses import StreamingResponse
     import json
-    from src.llm_agent import UniAgent
+    from src.config import USE_MCP
     
     data = await request.json()
     question = data.get("question", "")
@@ -268,9 +268,18 @@ async def ask_stream(request: Request):
     
     async def generate():
         try:
-            agent = UniAgent()
-            async for chunk in agent.process_query_stream(question, student_id):
-                yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
+            if USE_MCP:
+                # Use MCP agent (local/high-memory environments)
+                from src.llm_agent import UniAgent
+                agent = UniAgent()
+                async for chunk in agent.process_query_stream(question, student_id):
+                    yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
+            else:
+                # Use basic RAG (production/low-memory environments like Render free tier)
+                from src.rag_pipeline import answer_question_stream
+                async for chunk in answer_question_stream(question, student_id):
+                    yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
+            
             yield f"data: {json.dumps({'done': True})}\\n\\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\\n\\n"
