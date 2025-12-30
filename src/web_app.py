@@ -270,11 +270,11 @@ async def ask_stream(request: Request):
         try:
             # Use basic RAG directly (no MCP overhead)
             async for chunk in answer_question_stream(question, student_id):
-                yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             
-            yield f"data: {json.dumps({'done': True})}\\n\\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\\n\\n"
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
     
     return StreamingResponse(generate(), media_type="text/event-stream")
 
