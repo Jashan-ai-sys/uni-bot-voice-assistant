@@ -2,7 +2,7 @@
 .venv/
 __pycache__/
 db/
-data/
+# data/
 *.pyc
 *.mp3
 debug_output.txt

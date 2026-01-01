@@ -35,10 +35,14 @@ def get_doc_type(file_path):
         
     keyword_map = {
         "maps": "map",
-        "academics": "regulation",
-        "admissions": "regulation",
-        "exams": "regulation",
+        "academics": "academic",
+        "admissions": "admission",
+        "exams": "exam",
         "hostel": "hostel",
+        "hospital": "health",
+        "leave": "leave_policy",
+        "facilities": "facility",
+        "transport": "transport",
         "users": "user_data"
     }
     

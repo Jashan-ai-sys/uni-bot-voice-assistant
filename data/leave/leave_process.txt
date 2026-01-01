@@ -1,0 +1,151 @@
+LPU LEAVE APPLICATION PROCESS - COMPLETE GUIDE
+
+=== HOW TO APPLY FOR LEAVE ===
+
+STEP 1: Login to UMS Portal
+- Visit: https://ums.lpu.in
+- Enter your Student ID and Password
+- Click "Student Login"
+
+STEP 2: Navigate to Leave Section
+- Go to "Student Dashboard"
+- Click on "Leave Application" or "Apply for Leave"
+- Select leave type
+
+STEP 3: Fill Leave Application Form
+Required Information:
+- Leave Type (Medical/Personal/Emergency/Family Function)
+- Start Date
+- End Date
+- Number of Days
+- Reason for Leave (detailed)
+- Contact Number during leave
+- Emergency Contact
+
+STEP 4: Upload Supporting Documents
+- Medical Leave: Doctor's certificate mandatory
+- Emergency: Relevant proof
+- Family Function: Invitation/proof (if required)
+
+STEP 5: Submit Application
+- Review all details
+- Click "Submit"
+- Note down application number
+
+STEP 6: Approval Process
+- Application goes to Class Coordinator
+- Then to HOD
+- Final approval from Dean
+- Email notification sent at each stage
+
+=== LEAVE TYPES ===
+
+1. MEDICAL LEAVE
+- Requires: Doctor's certificate
+- Maximum: 7 days at a time
+- Approval: Usually within 24 hours
+
+2. PERSONAL LEAVE
+- Requires: Valid reason
+- Maximum: 3 days per month
+- Approval: 2-3 days
+
+3. EMERGENCY LEAVE
+- Requires: Emergency proof
+- Can be applied retrospectively
+- Approval: Priority basis
+
+4. FAMILY FUNCTION
+- Requires: Advance application (7 days)
+- Maximum: 5 days
+- Approval: Subject to attendance
+
+=== IMPORTANT RULES ===
+
+Attendance Requirement:
+- Minimum 75% attendance mandatory
+- Leave affects attendance percentage
+- Medical leave may be exempted (with certificate)
+
+Application Timeline:
+- Apply at least 2 days in advance (except emergency)
+- Retrospective leave: Apply within 3 days of return
+- Late applications may be rejected
+
+Maximum Leave:
+- Total leave per semester: 15 days
+- Continuous leave: Maximum 10 days
+- Frequent leave may affect academics
+
+=== LEAVE APPROVAL AUTHORITY ===
+
+For 1-2 days:
+- Class Coordinator approval sufficient
+
+For 3-5 days:
+- HOD approval required
+
+For 6+ days:
+- Dean approval mandatory
+
+=== LEAVE CANCELLATION ===
+
+How to Cancel:
+- Login to UMS Portal
+- Go to "My Applications"
+- Select leave application
+- Click "Cancel Request"
+- Provide reason for cancellation
+
+Cancellation Rules:
+- Can cancel before approval
+- After approval: Contact coordinator
+- Partial cancellation not allowed
+
+=== EMERGENCY LEAVE PROCEDURE ===
+
+If unable to apply online:
+1. Call university: +91-1824-517000
+2. Inform Class Coordinator
+3. Email to: coordinator@lpu.co.in
+4. Apply online as soon as possible
+5. Submit documents within 3 days of return
+
+=== LEAVE BALANCE CHECK ===
+
+Check Remaining Leave:
+- Login to UMS Portal
+- Go to "Leave History"
+- View "Leave Balance"
+- Shows: Applied, Approved, Rejected, Remaining
+
+=== COMMON ISSUES & SOLUTIONS ===
+
+Q: Leave application not submitting?
+A: Check all mandatory fields, ensure documents uploaded
+
+Q: Leave rejected?
+A: Contact coordinator for reason, reapply with corrections
+
+Q: Attendance below 75% after leave?
+A: Apply for attendance condonation with valid proof
+
+Q: Emergency leave without documents?
+A: Submit undertaking, provide documents within 7 days
+
+=== CONTACT FOR LEAVE QUERIES ===
+
+Class Coordinator: Check UMS for contact
+Academic Office: Block 29, Ground Floor
+Phone: +91-1824-517000 (Ext: 2222)
+Email: academics@lpu.co.in
+Timing: 9:00 AM to 5:00 PM (Monday to Friday)
+
+=== IMPORTANT NOTES ===
+
+- Keep copies of all leave applications
+- Save approval emails
+- Maintain document proofs
+- Check email regularly for updates
+- Inform hostel warden if staying in hostel
+- Update parents about leave status
