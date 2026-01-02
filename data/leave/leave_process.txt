@@ -133,8 +133,24 @@ A: Apply for attendance condonation with valid proof
 Q: Emergency leave without documents?
 A: Submit undertaking, provide documents within 7 days
 
-=== CONTACT FOR LEAVE QUERIES ===
+=== LEAVE EXTENSION & CONVERSION ===
 
+1. Converting Leave Type:
+- You can request to convert "Personal Leave" to "Medical Leave" if you fell ill during the leave.
+- Rquired: Valid medical certificate overlapping with the leave dates.
+- Procedure: Submit a written request to the HOD with the certificate within 3 days of returning.
+
+2. Extending Leave:
+- If you need to extend an ongoing leave, you must inform the Class Coordinator immediately via email or phone.
+- A new application must be submitted for the extended period.
+- Unauthorized extension (without prior information) will be marked as "Absent" and may attract penalties.
+
+3. Converting Extended Leave:
+- If you applied for a specific day but extended it due to unforeseen reasons:
+  - You typically cannot "convert" the unauthorized absence into authorized leave retrospectively unless it was a medical emergency or a critical family issue.
+  - You must meet the HOD with proof (medical report, etc.) to request "Condonation of Attendance" for those days.
+
+=== CONTACT FOR LEAVE QUERIES ===
 Class Coordinator: Check UMS for contact
 Academic Office: Block 29, Ground Floor
 Phone: +91-1824-517000 (Ext: 2222)

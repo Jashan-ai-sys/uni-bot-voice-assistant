@@ -24,11 +24,9 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-from elevenlabs import ElevenLabs
+from deepgram import DeepgramClient
 
-client = ElevenLabs(
-  api_key=os.getenv("ELEVENLABS_API_KEY")
-)
+deepgram = DeepgramClient(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -787,35 +785,79 @@ async def home():
             };
         }
 
+        let mediaRecorder;
+        let deepgramSocket;
+
         async function toggleVoice() {
             const btn = document.getElementById('micBtn');
-            if (!isListening) {
-                // Initialize Audio Context for sphere visualization
-                if (!audioContext) {
-                    const success = await initAudio();
-                    if (!success) {
-                        alert("Microphone access failed. Visuals may not work.");
-                    }
-                } else if (audioContext.state === 'suspended') {
-                    await audioContext.resume();
-                }
+            const input = document.getElementById('chatInput');
 
-                isListening = true;
-                btn.classList.add('active');
-                if (recognition) recognition.start();
-            } else {
+            if (isListening) {
+                // STOP Logic
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+                if (deepgramSocket) deepgramSocket.close();
                 isListening = false;
                 btn.classList.remove('active');
-                if (recognition) recognition.stop();
+                return;
+            }
+
+            // START Logic
+            try {
+                // 1. Get Token
+                const res = await fetch('/deepgram_token');
+                const { key } = await res.json();
+
+                // 2. Open Mic
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+                // 3. Connect Socket
+                deepgramSocket = new WebSocket('wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true', ['token', key]);
+
+                deepgramSocket.onopen = () => {
+                    isListening = true;
+                    btn.classList.add('active');
+                    
+                    mediaRecorder.addEventListener('dataavailable', event => {
+                        if (event.data.size > 0 && deepgramSocket.readyState === 1) {
+                            deepgramSocket.send(event.data);
+                        }
+                    });
+                    mediaRecorder.start(250); // Send every 250ms
+                };
+
+                deepgramSocket.onmessage = (message) => {
+                    const received = JSON.parse(message.data);
+                    const transcript = received.channel.alternatives[0].transcript;
+                    if (transcript && received.is_final) {
+                        input.value = transcript;
+                        sendMessage(true); // Auto-send with VOICE=TRUE
+                        // Toggle OFF to prevent echo for now
+                        toggleVoice(); 
+                    }
+                };
+                
+                deepgramSocket.onclose = () => {
+                     if (isListening) {
+                         isListening = false;
+                         btn.classList.remove('active');
+                     }
+                };
+
+            } catch (e) {
+                console.error("Deepgram Error:", e);
+                alert("Microphone Access Denied or Deepgram Error");
+                isListening = false;
+                btn.classList.remove('active');
             }
         }
 
         // Chat Logic
         function handleKeyPress(event) {
-            if (event.key === 'Enter') sendMessage();
+            if (event.key === 'Enter') sendMessage(false);
         }
 
-        async function sendMessage() {
+        async function sendMessage(isVoice = false) {
             const input = document.getElementById('chatInput');
             const question = input.value.trim();
             if (!question) return;
@@ -823,7 +865,7 @@ async def home():
             addMessage(question, 'user');
             input.value = '';
             
-            await getResponse(question, false);
+            await getResponse(question, isVoice);
         }
 
         function addMessage(text, type) {
@@ -857,7 +899,7 @@ async def home():
                 const response = await fetch('/ask_stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, student_id: studentId })
+                    body: JSON.stringify({ question, student_id: studentId, session_id: sessionId })
                 });
 
                 if (!response.ok) throw new Error('Network error');
@@ -914,9 +956,37 @@ async def home():
                     }
                 }
                 
-                // Ensure finish
+                // Voice Prefetch (Parallel)
+                let voicePromise = null;
+                if (isVoice) {
+                     voicePromise = fetch('/speak', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ text: fullText })
+                     }).then(res => res.blob());
+                }
+
+                // Ensure finish typing
                 while (displayedText.length < fullText.length) {
                     await new Promise(r => setTimeout(r, 100));
+                }
+
+                // Voice Playback (Play when ready)
+                if (isVoice && voicePromise) {
+                    try {
+                         const blob = await voicePromise;
+                         const audioMsg = new Audio(URL.createObjectURL(blob));
+                         audioMsg.play();
+                         
+                         // Visualizer
+                         if (audioContext && analyser) {
+                             const source = audioContext.createMediaElementSource(audioMsg);
+                             source.connect(analyser);
+                             analyser.connect(audioContext.destination);
+                         }
+                    } catch (e) {
+                        console.error("TTS Error:", e);
+                    }
                 }
 
             } catch (error) {
@@ -969,6 +1039,14 @@ async def home():
         
          // Load saved student ID
         let currentStudentId = localStorage.getItem('studentId');
+        
+        // Generate or retrieve Session ID for memory
+        let sessionId = localStorage.getItem('chatSessionId');
+        if (!sessionId) {
+            sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chatSessionId', sessionId);
+        }
+        console.log("Session ID:", sessionId);
 
     </script>
 </body>
@@ -990,15 +1068,16 @@ async def ask_stream(request: Request):
     data = await request.json()
     question = data.get("question", "")
     student_id = data.get("student_id", None)
+    session_id = data.get("session_id", "default_session") # Use provided ID or default
     
-    print(f"\n[DEBUG] WEB: Received stream request: {question}")
+    print(f"\n[DEBUG] WEB: Received stream request: {question} (Session: {session_id})")
     
     async def generate():
         # Import here to access streaming API
         from src.rag_pipeline import answer_question_stream
         try:
             print("[DEBUG] WEB: Starting generator loop...")
-            async for chunk in answer_question_stream(question, student_id):
+            async for chunk in answer_question_stream(question, student_id, session_id):
                 print(f"[DEBUG] WEB: Chunk: {chunk[:20]}...")
                 yield f"data: {json.dumps({'chunk': chunk})}\\n\\n"
             print("[DEBUG] WEB: Generator finished.")
@@ -1008,6 +1087,13 @@ async def ask_stream(request: Request):
             yield f"data: {json.dumps({'error': str(e)})}\\n\\n"
     
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+@app.get("/deepgram_token")
+async def get_deepgram_token():
+    """Return Deepgram API Key for frontend streaming"""
+    # In production, use a temporary scope key. For local, we pass the env key.
+    key = os.getenv("DEEPGRAM_API_KEY")
+    return JSONResponse({"key": key})
 
 @app.post("/speak")
 async def speak(request: Request):
@@ -1021,27 +1107,36 @@ async def speak(request: Request):
 
         print(f"🎤 Generating audio for: {text[:50]}...")
         
-        # Generate audio using the correct v1+ SDK method
-        # Use a specific voice ID for 'Rachel' or let it default if allowed, 
-        # but explicit ID is safer. Rachel ID: 21m00Tcm4TlvDq8ikWAM
-        audio_generator = client.text_to_speech.convert(
-            voice_id="21m00Tcm4TlvDq8ikWAM", 
-            text=text,
-            model_id="eleven_multilingual_v2"
-        )
+        # Deepgram TTS Config
+        options = {
+            "model": "aura-asteria-en",
+            "encoding": "linear16",
+            "container": "wav"
+        }
         
-        # Consume the generator to get bytes
-        audio_bytes = b"".join(audio_generator)
-        print(f"✅ Audio generated: {len(audio_bytes)} bytes")
+        # Define output buffer (In-Memory)
+        import io
+        audio_buffer = io.BytesIO()
+        
+        # Generate Audio (Streaming Generator)
+        response_generator = deepgram.speak.v1.audio.generate(text=text, **options)
+        
+        # Write to buffer
+        for chunk in response_generator:
+            if chunk:
+                audio_buffer.write(chunk)
+                
+        audio_bytes = audio_buffer.getvalue()
+
         
         # Return audio as response
         from fastapi.responses import Response
-        return Response(content=audio_bytes, media_type="audio/mpeg")
+        return Response(content=audio_bytes, media_type="audio/wav")
         
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        print(f"❌ ElevenLabs Error: {e}")
+        print(f"❌ Deepgram Error: {e}")
         print(error_trace)
         return JSONResponse({"error": str(e), "trace": error_trace}, status_code=500)
 

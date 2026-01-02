@@ -3,7 +3,18 @@ LPU UNIVERSITY HOSPITAL - COMPLETE INFORMATION
 === LOCATION ===
 Building: Block 34, Ground Floor
 Campus: Main Campus, LPU Phagwara
-Contact: +91-1824-517000 (Ext: 5555)
+Contact: +91-1824-517000 
+
+=== IMPORTANT CONTACT NUMBERS ===
+Hospital Reception: 9780036450
+Hospital Male Ward (Mr. Aneesh George): 7508182840
+Hospital Female Ward (Ms. Karamjit): 9780036453
+Medical Laboratory: 01824-444079
+Dr. N. K. Gupta: 01824-501227
+Dr. Vijay Mohan Soni: 01824-444066
+Dr. Monica Gulati: 9878426871
+Emergency (24/7): Ext 5555 OR 9915020439
+
 Emergency: Available 24/7
 
 === TIMINGS ===
@@ -63,7 +74,7 @@ Lab Tests: As per test (discounted rates)
 Medicines: Available at subsidized rates
 
 === EMERGENCY PROCEDURES ===
-1. Call emergency number: Ext 5555
+1. Call emergency number:
 2. Visit hospital directly (Block 34)
 3. Ambulance available on campus
 4. First aid available at hostel blocks

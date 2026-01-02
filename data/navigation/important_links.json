@@ -1,0 +1,953 @@
+{
+    "UMS_Services": {
+        "summary": {
+            "total_services": 14,
+            "total_level_2_items": 55,
+            "total_level_3_items": 35,
+            "total_level_4_items": 15,
+            "status": "COMPLETE",
+            "rag_ready": true
+        },
+        "services": [
+            {
+                "id": "POLICY",
+                "name": "Policies, Rules, Instructions, Guidelines & Formats",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "policy",
+                    "guidelines",
+                    "rules",
+                    "instructions"
+                ],
+                "items": [
+                    {
+                        "id": "POLICY.1",
+                        "name": "Academic Integrity Policy",
+                        "keywords": [
+                            "plagiarism",
+                            "cheating"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.2",
+                        "name": "Admission Guidelines",
+                        "keywords": [
+                            "admission",
+                            "enrollment"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.3",
+                        "name": "Attendance Policy",
+                        "keywords": [
+                            "attendance",
+                            "absence"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.4",
+                        "name": "Grading System Policy",
+                        "keywords": [
+                            "grading",
+                            "marks"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.5",
+                        "name": "Leave Policy",
+                        "keywords": [
+                            "leave",
+                            "sick leave",
+                            "casual leave"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.6",
+                        "name": "Code of Conduct",
+                        "keywords": [
+                            "conduct",
+                            "discipline"
+                        ]
+                    },
+                    {
+                        "id": "POLICY.7",
+                        "name": "IT Policies and Security",
+                        "keywords": [
+                            "IT security",
+                            "cybersecurity"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "AHF",
+                "name": "Animal House Facility",
+                "url": "https://ums.lpu.in/lpuums/frmAnimalHousePolicy.aspx?folder=AnimalHouse",
+                "keywords": [
+                    "animal house",
+                    "research animals",
+                    "laboratory"
+                ],
+                "items": [
+                    {
+                        "id": "AHF.1",
+                        "name": "Animal House Policies"
+                    },
+                    {
+                        "id": "AHF.2",
+                        "name": "Access and Safety Guidelines"
+                    },
+                    {
+                        "id": "AHF.3",
+                        "name": "Equipment and Resource Management"
+                    }
+                ]
+            },
+            {
+                "id": "ADID",
+                "name": "Apply Duplicate ID / Transport Card",
+                "url": "https://ums.lpu.in/lpuums/frmDuplicateIdCardApplicationForm.aspx",
+                "keywords": [
+                    "duplicate ID",
+                    "transport card",
+                    "replacement"
+                ],
+                "items": [
+                    {
+                        "id": "ADID.1",
+                        "name": "Duplicate ID Card Application",
+                        "subitems": [
+                            "Form",
+                            "Documents",
+                            "Timeline"
+                        ]
+                    },
+                    {
+                        "id": "ADID.2",
+                        "name": "Transport Card Application"
+                    },
+                    {
+                        "id": "ADID.3",
+                        "name": "Application Status Tracking"
+                    }
+                ]
+            },
+            {
+                "id": "APPT",
+                "name": "Appointment System",
+                "url": "https://ums.lpu.in/lpuums/openapp.aspx?from=ums&toApp=nextproject&pagename=dashboard/AppointmentSystem",
+                "keywords": [
+                    "appointment",
+                    "booking",
+                    "slot",
+                    "document verification"
+                ],
+                "items": [
+                    {
+                        "id": "APPT.1",
+                        "name": "Document Verification Booking"
+                    },
+                    {
+                        "id": "APPT.2",
+                        "name": "Accommodation Inquiries Appointment"
+                    },
+                    {
+                        "id": "APPT.3",
+                        "name": "ID Card Collection Appointment"
+                    },
+                    {
+                        "id": "APPT.4",
+                        "name": "Turnstile System Appointment"
+                    },
+                    {
+                        "id": "APPT.5",
+                        "name": "RFID Card Issuance Appointment"
+                    },
+                    {
+                        "id": "APPT.6",
+                        "name": "View Appointment Status"
+                    },
+                    {
+                        "id": "APPT.7",
+                        "name": "Cancel/Reschedule Appointment"
+                    }
+                ]
+            },
+            {
+                "id": "CDI",
+                "name": "Capstone Dissertation Internships",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "capstone",
+                    "dissertation",
+                    "internship",
+                    "project",
+                    "thesis",
+                    "research"
+                ],
+                "total_level_3_items": 5,
+                "total_level_4_items": 25,
+                "level_3_detailed": [
+                    {
+                        "level_3_id": "CDI.1",
+                        "level_3_name": "External CA format for Internship",
+                        "file_type": "PDF",
+                        "route": "/lpuums/Static%20Information/External%20CA%20format%20for%20Internship.pdf",
+                        "full_url": "https://ums.lpu.in/lpuums/Static%20Information/External%20CA%20format%20for%20Internship.pdf",
+                        "full_path": "Important Links > Capstone Dissertation Internships > External CA format for Internship",
+                        "keywords": [
+                            "CA format",
+                            "continuous assessment",
+                            "internship evaluation",
+                            "assessment rubric"
+                        ],
+                        "description": "Continuous Assessment format and guidelines for external internships",
+                        "level_4_items": [
+                            {
+                                "level_4_id": "CDI.1.1",
+                                "level_4_name": "Continuous Assessment Rubric",
+                                "path": "Important Links > Capstone > External CA > CA Rubric",
+                                "keywords": [
+                                    "rubric",
+                                    "assessment criteria",
+                                    "scoring"
+                                ],
+                                "level_5_items": [
+                                    "Technical Skills Assessment",
+                                    "Professional Conduct Evaluation",
+                                    "Communication Skills Assessment",
+                                    "Attendance and Punctuality",
+                                    "Team Contribution Evaluation"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.1.2",
+                                "level_4_name": "Evaluation Criteria",
+                                "path": "Important Links > Capstone > External CA > Evaluation Criteria",
+                                "keywords": [
+                                    "criteria",
+                                    "evaluation",
+                                    "performance standards"
+                                ],
+                                "level_5_items": [
+                                    "Performance Metrics",
+                                    "Quality Standards",
+                                    "Grading Scale",
+                                    "Weightage Distribution",
+                                    "Pass Criteria"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.1.3",
+                                "level_4_name": "CA Form Download",
+                                "path": "Important Links > Capstone > External CA > Form Download",
+                                "keywords": [
+                                    "form",
+                                    "download",
+                                    "template",
+                                    "document"
+                                ],
+                                "level_5_items": [
+                                    "CA Form PDF",
+                                    "Fillable Form Version",
+                                    "Form Instructions",
+                                    "Submission Guidelines"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.1.4",
+                                "level_4_name": "Submission Guidelines",
+                                "path": "Important Links > Capstone > External CA > Submission",
+                                "keywords": [
+                                    "submission",
+                                    "deadline",
+                                    "process",
+                                    "requirements"
+                                ],
+                                "level_5_items": [
+                                    "Submission Deadline",
+                                    "Format Requirements",
+                                    "Document Checklist",
+                                    "Submission Process"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.1.5",
+                                "level_4_name": "Grade Calculation Method",
+                                "path": "Important Links > Capstone > External CA > Grade Calculation",
+                                "keywords": [
+                                    "grade",
+                                    "calculation",
+                                    "conversion",
+                                    "scoring"
+                                ],
+                                "level_5_items": [
+                                    "Score to Grade Conversion",
+                                    "Weighted Average Calculation",
+                                    "Final Grade Determination"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "level_3_id": "CDI.2",
+                        "level_3_name": "Guidelines - Inviting External Examiners for Dissertation Evaluations Excluding M.Phil PhD",
+                        "file_type": "PDF",
+                        "route": "/lpuums/Static%20Information/Guidelines_for_Inviting_External_Examiners_for_Dissertation_Evaluations_Excluding_M.Phil_PhD.pdf",
+                        "full_url": "https://ums.lpu.in/lpuums/Static%20Information/Guidelines_for_Inviting_External_Examiners_for_Dissertation_Evaluations_Excluding_M.Phil_PhD.pdf",
+                        "full_path": "Important Links > Capstone Dissertation Internships > Guidelines - Inviting External Examiners",
+                        "keywords": [
+                            "external examiner",
+                            "dissertation evaluation",
+                            "evaluator",
+                            "examiner invitation"
+                        ],
+                        "description": "Guidelines for inviting and selecting external examiners for dissertation evaluation",
+                        "level_4_items": [
+                            {
+                                "level_4_id": "CDI.2.1",
+                                "level_4_name": "External Examiner Eligibility Criteria",
+                                "path": "Important Links > Capstone > External Examiners > Eligibility",
+                                "keywords": [
+                                    "eligibility",
+                                    "qualifications",
+                                    "requirements",
+                                    "criteria"
+                                ],
+                                "level_5_items": [
+                                    "Academic Qualifications Required",
+                                    "Experience Requirements",
+                                    "Subject Area Expertise",
+                                    "Conflict of Interest Policy",
+                                    "Publication Record"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.2.2",
+                                "level_4_name": "Application Process",
+                                "path": "Important Links > Capstone > External Examiners > Application",
+                                "keywords": [
+                                    "application",
+                                    "process",
+                                    "steps",
+                                    "procedure"
+                                ],
+                                "level_5_items": [
+                                    "Fill Examiner Recommendation Form",
+                                    "Submit Required Documents",
+                                    "Obtain Examiner Consent Letter",
+                                    "University Review Process",
+                                    "Approval and Confirmation"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.2.3",
+                                "level_4_name": "Examiner Selection Procedure",
+                                "path": "Important Links > Capstone > External Examiners > Selection",
+                                "keywords": [
+                                    "selection",
+                                    "procedure",
+                                    "process",
+                                    "criteria"
+                                ],
+                                "level_5_items": [
+                                    "Examiner Database",
+                                    "Recommendation Submission",
+                                    "Selection Committee Review",
+                                    "Final Approval",
+                                    "Communication with Examiner"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.2.4",
+                                "level_4_name": "Timeline and Deadlines",
+                                "path": "Important Links > Capstone > External Examiners > Timeline",
+                                "keywords": [
+                                    "timeline",
+                                    "deadline",
+                                    "dates",
+                                    "schedule"
+                                ],
+                                "level_5_items": [
+                                    "Application Submission Deadline",
+                                    "University Processing Timeline",
+                                    "Examiner Confirmation Deadline",
+                                    "Report Submission Timeline",
+                                    "Final Evaluation Schedule"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.2.5",
+                                "level_4_name": "Evaluation Framework",
+                                "path": "Important Links > Capstone > External Examiners > Framework",
+                                "keywords": [
+                                    "framework",
+                                    "evaluation",
+                                    "assessment",
+                                    "rubric"
+                                ],
+                                "level_5_items": [
+                                    "Evaluation Criteria",
+                                    "Assessment Parameters",
+                                    "Grading Scale",
+                                    "Report Format",
+                                    "Recommendation Categories"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.2.6",
+                                "level_4_name": "Fee Structure for Examiners",
+                                "path": "Important Links > Capstone > External Examiners > Fees",
+                                "keywords": [
+                                    "fee",
+                                    "payment",
+                                    "honorarium",
+                                    "compensation"
+                                ],
+                                "level_5_items": [
+                                    "Examiner Honorarium",
+                                    "Travel Reimbursement",
+                                    "Payment Process",
+                                    "Tax Implications"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "level_3_id": "CDI.3",
+                        "level_3_name": "Guidelines-Dissertation for Master Degree Programs (except M.Phil)",
+                        "file_type": "PDF",
+                        "route": "/lpuums/Static%20Information/Guidelines%20for%20Dissertation%20for%20Master%20Degree%20Programs%20Except%20for%20M.Phil.%20Programs%20Applicable%20to%20Academic%20Session%202014-15.pdf",
+                        "full_url": "https://ums.lpu.in/lpuums/Static%20Information/Guidelines%20for%20Dissertation%20for%20Master%20Degree%20Programs%20Except%20for%20M.Phil.%20Programs%20Applicable%20to%20Academic%20Session%202014-15.pdf",
+                        "full_path": "Important Links > Capstone Dissertation Internships > Guidelines-Dissertation for Master Degree",
+                        "keywords": [
+                            "master dissertation",
+                            "M.Tech dissertation",
+                            "thesis",
+                            "research",
+                            "master's project"
+                        ],
+                        "description": "Complete guidelines for master's degree dissertation",
+                        "level_4_items": [
+                            {
+                                "level_4_id": "CDI.3.1",
+                                "level_4_name": "Overview and Objectives",
+                                "path": "Important Links > Capstone > Master Dissertation > Overview",
+                                "keywords": [
+                                    "overview",
+                                    "objectives",
+                                    "purpose",
+                                    "scope"
+                                ],
+                                "level_5_items": [
+                                    "Dissertation Purpose",
+                                    "Learning Outcomes",
+                                    "Program Requirements",
+                                    "Credit Hours"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.2",
+                                "level_4_name": "Dissertation Topics and Selection",
+                                "path": "Important Links > Capstone > Master Dissertation > Topic Selection",
+                                "keywords": [
+                                    "topic",
+                                    "selection",
+                                    "approval",
+                                    "guidelines"
+                                ],
+                                "level_5_items": [
+                                    "Topic Selection Process",
+                                    "Topic Approval Procedure",
+                                    "Research Area Guidelines",
+                                    "Novelty Requirements"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.3",
+                                "level_4_name": "Advisor/Guide Assignment",
+                                "path": "Important Links > Capstone > Master Dissertation > Advisor Assignment",
+                                "keywords": [
+                                    "advisor",
+                                    "guide",
+                                    "mentor",
+                                    "supervision"
+                                ],
+                                "level_5_items": [
+                                    "Advisor Selection Process",
+                                    "Advisor Responsibilities",
+                                    "Co-advisor Guidelines",
+                                    "Advisor Change Policy"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.4",
+                                "level_4_name": "Research Proposal Guidelines",
+                                "path": "Important Links > Capstone > Master Dissertation > Research Proposal",
+                                "keywords": [
+                                    "proposal",
+                                    "research plan",
+                                    "methodology",
+                                    "timeline"
+                                ],
+                                "level_5_items": [
+                                    "Proposal Structure",
+                                    "Content Requirements",
+                                    "Proposal Submission Deadline",
+                                    "Proposal Approval Process"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.5",
+                                "level_4_name": "Dissertation Format and Structure",
+                                "path": "Important Links > Capstone > Master Dissertation > Format",
+                                "keywords": [
+                                    "format",
+                                    "structure",
+                                    "template",
+                                    "guidelines"
+                                ],
+                                "level_5_items": [
+                                    "Title Page Format",
+                                    "Abstract Guidelines",
+                                    "Chapter Organization",
+                                    "Page Numbering",
+                                    "Font and Spacing Requirements"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.6",
+                                "level_4_name": "Literature Review Guidelines",
+                                "path": "Important Links > Capstone > Master Dissertation > Literature Review",
+                                "keywords": [
+                                    "literature review",
+                                    "references",
+                                    "sources",
+                                    "research papers"
+                                ],
+                                "level_5_items": [
+                                    "Literature Review Purpose",
+                                    "Source Selection Criteria",
+                                    "Coverage Requirements",
+                                    "Citation Guidelines"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.7",
+                                "level_4_name": "Methodology Guidelines",
+                                "path": "Important Links > Capstone > Master Dissertation > Methodology",
+                                "keywords": [
+                                    "methodology",
+                                    "research method",
+                                    "experimental design",
+                                    "approach"
+                                ],
+                                "level_5_items": [
+                                    "Research Design Selection",
+                                    "Data Collection Methods",
+                                    "Analysis Techniques",
+                                    "Validity and Reliability"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.8",
+                                "level_4_name": "Evaluation Criteria",
+                                "path": "Important Links > Capstone > Master Dissertation > Evaluation",
+                                "keywords": [
+                                    "evaluation",
+                                    "criteria",
+                                    "grading",
+                                    "assessment"
+                                ],
+                                "level_5_items": [
+                                    "Research Quality (40%)",
+                                    "Presentation and Writing (20%)",
+                                    "Original Contribution (25%)",
+                                    "Adherence to Guidelines (15%)"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.9",
+                                "level_4_name": "Submission Requirements",
+                                "path": "Important Links > Capstone > Master Dissertation > Submission",
+                                "keywords": [
+                                    "submission",
+                                    "deadline",
+                                    "format",
+                                    "documents"
+                                ],
+                                "level_5_items": [
+                                    "Final Submission Deadline",
+                                    "Number of Copies",
+                                    "Soft Copy Format",
+                                    "Binding Requirements",
+                                    "Checklist for Submission"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.3.10",
+                                "level_4_name": "Plagiarism Policy",
+                                "path": "Important Links > Capstone > Master Dissertation > Plagiarism",
+                                "keywords": [
+                                    "plagiarism",
+                                    "originality",
+                                    "copying",
+                                    "academic integrity"
+                                ],
+                                "level_5_items": [
+                                    "Plagiarism Definition",
+                                    "Plagiarism Detection Tools",
+                                    "Permissible Similarity Percentage",
+                                    "Consequences of Plagiarism"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "level_3_id": "CDI.4",
+                        "level_3_name": "Guidelines-Project Courses including Capstone",
+                        "file_type": "PDF",
+                        "route": "/lpuums/Static%20Information/Guidelines%20for%20Project%20Courses%20Including%20Capstone%20%20For%20Academic%20Session%202014-15.pdf",
+                        "full_url": "https://ums.lpu.in/lpuums/Static%20Information/Guidelines%20for%20Project%20Courses%20Including%20Capstone%20%20For%20Academic%20Session%202014-15.pdf",
+                        "full_path": "Important Links > Capstone Dissertation Internships > Guidelines-Project Courses including Capstone",
+                        "keywords": [
+                            "capstone project",
+                            "project course",
+                            "team project",
+                            "implementation"
+                        ],
+                        "description": "Guidelines for capstone and project-based courses",
+                        "level_4_items": [
+                            {
+                                "level_4_id": "CDI.4.1",
+                                "level_4_name": "Project Course Overview",
+                                "path": "Important Links > Capstone > Project Courses > Overview",
+                                "keywords": [
+                                    "overview",
+                                    "introduction",
+                                    "purpose",
+                                    "scope"
+                                ],
+                                "level_5_items": [
+                                    "Course Objectives",
+                                    "Learning Outcomes",
+                                    "Credit Structure",
+                                    "Assessment Methods"
+                                ]
+                            },
+                            {
+                                "level_4_id": "CDI.4.2",
+                                "level_4_name": "Capstone Project Objectives",
+                                "path": "Important Links > Capstone > Project Courses > Objectives",
+                                "keywords": [
+                                    "objectives",
+                                    "goals",
+                                    "expected outcomes"
+                                ],
+                                "level_5_items": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "CAD",
+                "name": "Compulsory Accommodation Details",
+                "url": "https://ums.lpu.in/lpuums/frmstudentaccommodationdetails.aspx",
+                "keywords": [
+                    "accommodation",
+                    "hostel",
+                    "residential details"
+                ],
+                "items": [
+                    {
+                        "id": "CAD.1",
+                        "name": "Accommodation Information Form"
+                    },
+                    {
+                        "id": "CAD.2",
+                        "name": "Update Accommodation Status"
+                    },
+                    {
+                        "id": "CAD.3",
+                        "name": "View Accommodation Records"
+                    }
+                ]
+            },
+            {
+                "id": "EMERG",
+                "name": "Emergency Contact Numbers",
+                "url": "https://ums.lpu.in/lpuums/EmergencyNumbers.html",
+                "keywords": [
+                    "emergency",
+                    "contact",
+                    "helpline",
+                    "hotline"
+                ],
+                "items": [
+                    {
+                        "id": "EMERG.1",
+                        "name": "Campus Security Hotline"
+                    },
+                    {
+                        "id": "EMERG.2",
+                        "name": "Medical Emergency"
+                    },
+                    {
+                        "id": "EMERG.3",
+                        "name": "Administrative Office Numbers"
+                    },
+                    {
+                        "id": "EMERG.4",
+                        "name": "Hostel Wardens Contact"
+                    },
+                    {
+                        "id": "EMERG.5",
+                        "name": "Dean of Student Affairs"
+                    }
+                ]
+            },
+            {
+                "id": "INTERACT",
+                "name": "Interaction Timings with Higher Authorities",
+                "url": "https://ums.lpu.in/lpuums/Static%20Information/Interaction%20Timings%20with%20Higher%20Authorities.pdf",
+                "keywords": [
+                    "interaction",
+                    "office hours",
+                    "availability"
+                ],
+                "items": [
+                    {
+                        "id": "INTERACT.1",
+                        "name": "Dean Office Hours"
+                    },
+                    {
+                        "id": "INTERACT.2",
+                        "name": "Department Head Availability"
+                    },
+                    {
+                        "id": "INTERACT.3",
+                        "name": "Student Affairs Office Timings"
+                    },
+                    {
+                        "id": "INTERACT.4",
+                        "name": "Counselor Availability Schedule"
+                    }
+                ]
+            },
+            {
+                "id": "LOSTANDFOUND",
+                "name": "Lost and Found",
+                "url": "https://ums.lpu.in/lpuums/frmLostAndFoundReport.aspx",
+                "keywords": [
+                    "lost",
+                    "found",
+                    "recovery"
+                ],
+                "items": [
+                    {
+                        "id": "LF.1",
+                        "name": "Browse Lost Items"
+                    },
+                    {
+                        "id": "LF.2",
+                        "name": "Browse Found Items"
+                    },
+                    {
+                        "id": "LF.3",
+                        "name": "Report Lost Item"
+                    },
+                    {
+                        "id": "LF.4",
+                        "name": "Report Found Item"
+                    },
+                    {
+                        "id": "LF.5",
+                        "name": "Claim Item"
+                    },
+                    {
+                        "id": "LF.6",
+                        "name": "Item Collection Process"
+                    }
+                ]
+            },
+            {
+                "id": "MAP",
+                "name": "Induction / University Map",
+                "url": "https://ums.lpu.in/lpuums/Static%20Information/Siteplan16.jpg",
+                "keywords": [
+                    "map",
+                    "navigation",
+                    "buildings"
+                ],
+                "items": [
+                    {
+                        "id": "MAP.1",
+                        "name": "Campus Map"
+                    },
+                    {
+                        "id": "MAP.2",
+                        "name": "Building Directory"
+                    },
+                    {
+                        "id": "MAP.3",
+                        "name": "Facility Locations"
+                    },
+                    {
+                        "id": "MAP.4",
+                        "name": "Parking"
+                    },
+                    {
+                        "id": "MAP.5",
+                        "name": "Induction Materials"
+                    }
+                ]
+            },
+            {
+                "id": "MEDICAL",
+                "name": "Uni Hospital Medical Staff List",
+                "url": "https://ums.lpu.in/lpuums/Static%20Information/DoctorList.htm",
+                "keywords": [
+                    "medical",
+                    "doctor",
+                    "hospital"
+                ],
+                "items": [
+                    {
+                        "id": "MED.1",
+                        "name": "Doctor Directory"
+                    },
+                    {
+                        "id": "MED.2",
+                        "name": "Specialties"
+                    },
+                    {
+                        "id": "MED.3",
+                        "name": "Hospital Hours"
+                    },
+                    {
+                        "id": "MED.4",
+                        "name": "Appointment Booking"
+                    },
+                    {
+                        "id": "MED.5",
+                        "name": "Available Services"
+                    }
+                ]
+            },
+            {
+                "id": "MESSAGES",
+                "name": "My Messages",
+                "url": "https://ums.lpu.in/lpuums/frmStudentsMyMessages.aspx",
+                "keywords": [
+                    "messages",
+                    "notifications",
+                    "communication"
+                ],
+                "items": [
+                    {
+                        "id": "MSG.1",
+                        "name": "Inbox"
+                    },
+                    {
+                        "id": "MSG.2",
+                        "name": "Sent Messages"
+                    },
+                    {
+                        "id": "MSG.3",
+                        "name": "Archived Messages"
+                    },
+                    {
+                        "id": "MSG.4",
+                        "name": "Notifications",
+                        "subitems": [
+                            "Academic",
+                            "Administrative",
+                            "Hostel",
+                            "Placement"
+                        ]
+                    },
+                    {
+                        "id": "MSG.5",
+                        "name": "Compose Message"
+                    }
+                ]
+            },
+            {
+                "id": "REQAPPT",
+                "name": "Request Appointment / Grievance",
+                "url": "https://ums.lpu.in/lpuums/frmGrievanceRequestMaster.aspx",
+                "keywords": [
+                    "grievance",
+                    "complaint",
+                    "request",
+                    "appointment"
+                ],
+                "items": [
+                    {
+                        "id": "REQ.1",
+                        "name": "Grievance Registration",
+                        "subitems": [
+                            "Academic",
+                            "Administrative",
+                            "Facility",
+                            "Hostel"
+                        ]
+                    },
+                    {
+                        "id": "REQ.2",
+                        "name": "Complaint Form Submission"
+                    },
+                    {
+                        "id": "REQ.3",
+                        "name": "Appointment Slot Booking"
+                    },
+                    {
+                        "id": "REQ.4",
+                        "name": "Track Request Status"
+                    },
+                    {
+                        "id": "REQ.5",
+                        "name": "Appeal Process"
+                    }
+                ]
+            },
+            {
+                "id": "ACAL",
+                "name": "Academic Calendar",
+                "url": "https://ums.lpu.in/lpuums/openapp.aspx?from=ums&toApp=nextproject&pagename=dashboard/academics/academicCalendarDetails",
+                "keywords": [
+                    "calendar",
+                    "dates",
+                    "holiday"
+                ],
+                "items": [
+                    {
+                        "id": "CAL.1",
+                        "name": "Current Semester Calendar"
+                    },
+                    {
+                        "id": "CAL.2",
+                        "name": "Academic Year Overview"
+                    },
+                    {
+                        "id": "CAL.3",
+                        "name": "Important Dates"
+                    },
+                    {
+                        "id": "CAL.4",
+                        "name": "Holiday Schedule"
+                    },
+                    {
+                        "id": "CAL.5",
+                        "name": "Exam Schedule"
+                    },
+                    {
+                        "id": "CAL.6",
+                        "name": "Download PDF"
+                    }
+                ]
+            }
+        ]
+    }
+}

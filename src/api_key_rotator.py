@@ -15,7 +15,7 @@ class APIKeyRotator:
         self.api_keys = []
         
         # Primary key
-        primary_key = os.getenv("GOOGLE_API_KEY")
+        primary_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         if primary_key:
             self.api_keys.append(primary_key)
         

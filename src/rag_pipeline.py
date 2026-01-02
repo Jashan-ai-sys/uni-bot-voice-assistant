@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.chat_models import ChatOllama
+from langchain_openai import ChatOpenAI
 from flashrank import Ranker, RerankRequest
 from langchain_core.documents import Document
 
@@ -32,10 +34,10 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 DB_PATH = os.path.join(BASE_DIR, "db", "faiss_index")
 
 # --- FAST PIPELINE CONFIG ---
-LLM_MODEL = "gemini-2.0-flash"  # Updated to available model
+LLM_MODEL = "gemini-flash-latest"  # Use stable generic alias for best quota
 EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 RERANK_MODEL = "ms-marco-MiniLM-L-12-v2"
-MAX_CONTEXT_CHARS = 1200 # Hard cap for velocity
+MAX_CONTEXT_CHARS = 4000 # Increased for better RAG coverage
 
 # Global Cache (Simple in-memory)
 CACHE = {}
@@ -132,12 +134,51 @@ else:
     api_key = os.getenv("GOOGLE_API_KEY")
     print(f"🔑 Using default API key")
 
-LLM = ChatGoogleGenerativeAI(
+
+# 1. Primary: OpenRouter (Gemini 2.0 Flash Free)
+openrouter_key = os.getenv("OPENROUTER_API_KEY")
+LLM_OPENROUTER = None
+
+if openrouter_key:
+    print(f"✅ Primary LLM: Gemini 2.0 Flash (OpenRouter)")
+    LLM_OPENROUTER = ChatOpenAI(
+        model="google/gemini-2.0-flash-exp:free",
+        temperature=0.1,
+        api_key=openrouter_key,
+        base_url="https://openrouter.ai/api/v1",
+        default_headers={
+            "HTTP-Referer": "https://uni-bot.internal",
+            "X-Title": "LPU Voice Assistant"
+        }
+    )
+else:
+    print(f"⚠️ OPENROUTER_API_KEY missing. Skipping OpenRouter.")
+
+# 2. Secondary: Gemini (Backup) 
+LLM_GEMINI = ChatGoogleGenerativeAI(
     model=LLM_MODEL,
     temperature=0.1,
     google_api_key=api_key,
     convert_system_message_to_human=True
 )
+
+# Fallback LLM (Ollama / Ngrok)
+OLLAMA_URL = os.getenv("OLLAMA_BASE_URL")
+LLM_FALLBACK = None
+if OLLAMA_URL:
+    print(f"✅ Fallback configured: Ollama at {OLLAMA_URL}")
+    LLM_FALLBACK = ChatOllama(
+        base_url=OLLAMA_URL,
+        model="gemma2:2b", # Default small model
+        temperature=0.1
+    )
+else:
+    print("⚠️ No OLLAMA_BASE_URL found. Fallback disabled.")
+
+# Chat Memory Store (Simple in-memory dict for demo)
+# Format: {session_id: [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]}
+CHAT_SESSIONS = {}
+MAX_HISTORY = 5
 
 # Global Reranker (Preloaded)
 RERANKER = Ranker(model_name=RERANK_MODEL, cache_dir=os.path.join(BASE_DIR, "models"))
@@ -152,16 +193,21 @@ EMBEDDINGS = HuggingFaceEmbeddings(
 )
 
 if os.path.exists(DB_PATH):
-    VECTORSTORE = FAISS.load_local(
-        DB_PATH, 
-        EMBEDDINGS, 
-        allow_dangerous_deserialization=True
-    )
-    print(f"✅ FAISS Index Loaded ({time.time() - start_load:.2f}s)")
-    # Load FAQ cache after FAISS is ready
-    load_faq_cache()
+    print(f"DEBUG: DB_PATH exists at {DB_PATH}")
+    try:
+        VECTORSTORE = FAISS.load_local(
+            DB_PATH, 
+            EMBEDDINGS, 
+            allow_dangerous_deserialization=True
+        )
+        print(f"✅ FAISS Index Loaded ({time.time() - start_load:.2f}s)")
+        # Load FAQ cache after FAISS is ready
+        load_faq_cache()
+    except Exception as e:
+        print(f"❌ ERROR Loading FAISS: {e}")
+        VECTORSTORE = None
 else:
-    print("⚠️ FAISS Index not found. Please run ingest.py.")
+    print(f"⚠️ FAISS Index not found at {DB_PATH}. Please run ingest.py.")
     VECTORSTORE = None
 
 # Startup Warmup
@@ -187,6 +233,10 @@ def identify_intent(query: str) -> dict:
    
     # Map keywords to doc_type
     intent_map = {
+        "navigation": "navigation",
+        "ums": "navigation",
+        "path": "navigation",
+        "hospital": "health",
         "map": "map",
         "where is": "map",
         "location": "map",
@@ -196,14 +246,12 @@ def identify_intent(query: str) -> dict:
         "scholarship": "regulation",
         "refund": "regulation",
         "exam": "regulation",
-        "rule": "regulation",
         "policy": "regulation",
         "attendance": "regulation",
-        "hostel": "hostel",
-        "mess": "hostel",
-        "laundry": "hostel",
-        "room": "hostel",
-        "warden": "hostel"
+        "placement": "academic",
+        "job": "academic",
+        "internship": "academic",
+        "leave": "leave_policy"
     }
    
     for key, doc_type in intent_map.items():
@@ -216,6 +264,10 @@ def answer_question(query: str, student_id: str = None) -> str:
     """
     Answers a question using Optimized RAG (FAISS + Conditional Rerank + Cache).
     """
+    # 0.0 Greeting Check
+    if query.lower().strip().strip("!.,?") in ["hi", "hello", "hey", "greetings", "good morning", "good evening"]:
+        return "Hello! I am your LPU Assistant. I can help you with Hostels, Admissions, Placements, and Exam policies. What would you like to know?"
+
     # 0. Smart Cache Check (NEW - Enhanced caching)
     if SMART_CACHE_ENABLED:
         cached_answer = get_cached_response(query)
@@ -336,6 +388,10 @@ def answer_question(query: str, student_id: str = None) -> str:
         response = LLM.invoke(system_prompt)
         content = response.content
         
+        # Fix encoding glitch in navigation paths
+        if content:
+            content = content.replace("à", " → ")
+        
         # Cache result (both old and new cache)
         clear_cache_if_full()
         CACHE[query] = content
@@ -378,18 +434,60 @@ Available FAQ topics:
         
         return "I encountered an error. Please try again."
 
-async def answer_question_stream(query: str, student_id: str = None):
+        return "I encountered an error. Please try again."
+
+def rewrite_query(query, history):
     """
-    Streaming version of answer_question.
+    Rewrite the user query to specific, standalone question using chat history.
+    Example: "Where is she?" + History(Rashmi) -> "Where is Rashmi Mittal?"
     """
+    if not history:
+        return query
+        
+    # Construct history string
+    history_str = ""
+    for turn in history[-3:]: # Look at last 3 turns
+        role = "User" if turn["role"] == "user" else "Assistant"
+        history_str += f"{role}: {turn['content']}\n"
+        
+    system_prompt = f"""Given the following conversation and a follow-up question, rephrase the follow-up question to be a standalone question.
+Chat History:
+{history_str}
+Follow Up Input: {query}
+Standalone Question:"""
+
+    try:
+        # Use Gemini for fast rewriting
+        response = LLM_GEMINI.invoke(system_prompt)
+        if response and response.content:
+            cleaned = response.content.strip()
+            print(f"🔄 Rewritten: '{query}' -> '{cleaned}'")
+            return cleaned
+    except Exception as e:
+        print(f"⚠️ Rewrite failed: {e}")
+    
+    return query
+
+async def answer_question_stream(query: str, student_id: str = None, session_id: str = None):
+    """
+    Streaming version of answer_question with Memory.
+    """
+    # 0.0 Greeting Check
+    q_clean = query.lower().strip().strip("!.,?")
+    print(f"DEBUG: Greeting Check: '{query}' -> '{q_clean}'")
+    if q_clean in ["hi", "hello", "hey", "greetings", "good morning", "good evening"]:
+        yield "Hello! I am your LPU Assistant. I can help you with Hostels, Admissions, Placements, and Exam policies. What would you like to know?"
+        return
+
     # 0. Cache Check (Not easily streamable unless we fake stream, but worth it for speed)
     if query in CACHE:
         yield CACHE[query]
         return
 
     # Check for timetable queries first
-    timetable_keywords = ["class", "schedule", "timetable", "subject", "room", "lecture", "practical", "tutorial", "when", "where", "time", "monday", "tuesday", "wednesday", "thursday", "friday", "teacher", "what time", "when is"]
+    timetable_keywords = ["class", "schedule", "timetable", "timtable", "subject", "room", "lecture", "practical", "tutorial", "what time", "when is my class", "upcoming class", "routine"]
     is_timetable_query = any(keyword in query.lower() for keyword in timetable_keywords)
+    print(f"DEBUG: Intent Check: '{query}' -> Timetable? {is_timetable_query}")
 
     if student_id:
         try:
@@ -409,16 +507,25 @@ async def answer_question_stream(query: str, student_id: str = None):
    
     # Optimized Pipeline (Streaming)
     try:
+        print(f"DEBUG: Session '{session_id}' in Storage? {session_id in CHAT_SESSIONS}. Keys: {list(CHAT_SESSIONS.keys())}")
+        
+        # Step 0: Contextual Rewrite (New Memory Layer)
+        search_query = query
+        # DISABLED to save API calls
+        # if session_id and session_id in CHAT_SESSIONS:
+        #     search_query = rewrite_query(query, CHAT_SESSIONS[session_id])
+
         # Step 1: Intent
-        search_filter = identify_intent(query)
+        search_filter = identify_intent(search_query)
         
         if not VECTORSTORE:
              yield "System is initializing."
              return
         
         # Step 2: Dense Retrieval (FAISS)
+        # Step 2: Dense Retrieval (FAISS)
         docs_and_scores = VECTORSTORE.similarity_search_with_score(
-            query,
+            search_query,
             k=4,
             filter=search_filter
         )
@@ -433,7 +540,7 @@ async def answer_question_stream(query: str, student_id: str = None):
                 {"id": str(i), "text": doc.page_content, "meta": doc.metadata} 
                 for i, (doc, score) in enumerate(docs_and_scores)
             ]
-            rerank_request = RerankRequest(query=query, passages=passages)
+            rerank_request = RerankRequest(query=search_query, passages=passages)
             results = RERANKER.rerank(rerank_request)
             top_results = results[:3]
             final_docs_content = [res['text'] for res in top_results]
@@ -449,28 +556,81 @@ async def answer_question_stream(query: str, student_id: str = None):
             yield "Information not available in university records."
             return
 
-        # Step 5: Stream Answer
-        system_prompt = f"""You are JARVIS. Answer ONLY from the content below.
-        If the answer is not present, say "Information not available in university records."
+        # Step 5: Stream Answer with Memory context
         
-        Content:
+        # Build Chat History String
+        history_str = ""
+        if session_id:
+            if session_id not in CHAT_SESSIONS:
+                CHAT_SESSIONS[session_id] = []
+            
+            # Format last few turns
+            for turn in CHAT_SESSIONS[session_id][-MAX_HISTORY:]:
+                role = "User" if turn["role"] == "user" else "Assistant"
+                history_str += f"{role}: {turn['content']}\n"
+        
+        system_prompt = f"""You are JARVIS. Answer using the Context below and the Chat History.
+        If the answer is not present in either, say "Information not available in university records."
+        
+        Chat History:
+        {history_str}
+        
+        Content context:
         {context}
         
-        Question: {query}
+        Current Question: {query}
         
         Answer:"""
 
         full_response = ""
-        for chunk in LLM.stream(system_prompt):
-             if hasattr(chunk, 'content') and chunk.content:
-                text = chunk.content
-                full_response += text
-                yield text
+        
+        # Generator Strategy: Gemini -> OpenAI -> Ollama
+        def generate_with_fallback():
+            # Attempt 1: Gemini (Official API - Primary)
+            try:
+                for chunk in LLM_GEMINI.stream(system_prompt):
+                     if hasattr(chunk, 'content') and chunk.content:
+                        yield chunk.content.replace("à", " → ")
+                return # Success
+            except Exception as e:
+                print(f"❌ Gemini Failed: {e}")
+                
+                # Attempt 2: OpenRouter (Backup 1)
+                if LLM_OPENROUTER:
+                    yield "\n\n⚠️ Primary unavailable. Routing to OpenRouter...\n\n"
+                    try:
+                        for chunk in LLM_OPENROUTER.stream(system_prompt):
+                             if hasattr(chunk, 'content') and chunk.content:
+                                 yield chunk.content.replace("à", " → ")
+                        return # Success
+                    except Exception as e_or:
+                        print(f"❌ OpenRouter Failed: {e_or}")
+
+                # Attempt 3: Ollama (Backup 2)
+                if LLM_FALLBACK:
+                    yield "\n\n⚠️ Connection instability detected. Switching to local neural link...\n\n"
+                    try:
+                        for chunk in LLM_FALLBACK.stream(system_prompt):
+                            if hasattr(chunk, 'content') and chunk.content:
+                                yield chunk.content
+                    except Exception as e2:
+                         yield f"❌ Backup link failed: {e2}"
+                else:
+                     yield "Information not available (All Systems Down)."
+
+        for text in generate_with_fallback():
+            full_response += text
+            yield text
         
         # Cache the full response for next time
         if full_response:
             clear_cache_if_full()
             CACHE[query] = full_response
+            
+            # Save to Memory
+            if session_id:
+                CHAT_SESSIONS[session_id].append({"role": "user", "content": query})
+                CHAT_SESSIONS[session_id].append({"role": "assistant", "content": full_response})
 
     except Exception as e:
         print(f"Streaming Pipeline Error: {e}")

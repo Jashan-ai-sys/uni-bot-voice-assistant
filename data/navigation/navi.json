@@ -1,0 +1,1265 @@
+[
+    {
+        "part": 1,
+        "total_parts": 4,
+        "services_in_part": 5,
+        "ums_navigation": {
+            "service_1_ARMS": {
+                "id": "ARMS",
+                "name": "Alumni Relations Management System (ARMS)",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "alumni",
+                    "alumni relations",
+                    "networking",
+                    "alumni events"
+                ],
+                "category": "System Management",
+                "type": "system_link",
+                "level_3_items": [
+                    {
+                        "id": "ARMS.1",
+                        "name": "Alumni Mentor Selection",
+                        "path": "UMS Navigation > ARMS > Alumni Mentor Selection"
+                    },
+                    {
+                        "id": "ARMS.2",
+                        "name": "Update Alumni Profile",
+                        "path": "UMS Navigation > ARMS > Update Alumni Profile"
+                    },
+                    {
+                        "id": "ARMS.3",
+                        "name": "Alumni Networking Events",
+                        "path": "UMS Navigation > ARMS > Alumni Events"
+                    },
+                    {
+                        "id": "ARMS.4",
+                        "name": "Alumni Directory",
+                        "path": "UMS Navigation > ARMS > Alumni Directory"
+                    },
+                    {
+                        "id": "ARMS.5",
+                        "name": "Alumni Contributions",
+                        "path": "UMS Navigation > ARMS > Contributions"
+                    }
+                ]
+            },
+            "service_2_CMS": {
+                "id": "CMS",
+                "name": "Central Mail System (CMS)",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "mail",
+                    "email",
+                    "central mail",
+                    "messaging"
+                ],
+                "category": "System Management",
+                "type": "system_link",
+                "level_3_items": [
+                    {
+                        "id": "CMS.1",
+                        "name": "Compose Mail",
+                        "path": "UMS Navigation > CMS > Compose Mail"
+                    },
+                    {
+                        "id": "CMS.2",
+                        "name": "Inbox",
+                        "path": "UMS Navigation > CMS > Inbox"
+                    },
+                    {
+                        "id": "CMS.3",
+                        "name": "Sent Messages",
+                        "path": "UMS Navigation > CMS > Sent Messages"
+                    },
+                    {
+                        "id": "CMS.4",
+                        "name": "Drafts",
+                        "path": "UMS Navigation > CMS > Drafts"
+                    },
+                    {
+                        "id": "CMS.5",
+                        "name": "Mail Settings",
+                        "path": "UMS Navigation > CMS > Settings"
+                    }
+                ]
+            },
+            "service_3_CFPE": {
+                "id": "CFPE",
+                "name": "Centre For Professional Enhancement",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "professional enhancement",
+                    "skill development",
+                    "training",
+                    "certification"
+                ],
+                "category": "System Management",
+                "type": "system_link",
+                "level_3_items": [
+                    {
+                        "id": "CFPE.1",
+                        "name": "Available Programs",
+                        "path": "UMS Navigation > CFPE > Available Programs"
+                    },
+                    {
+                        "id": "CFPE.2",
+                        "name": "Enroll in Program",
+                        "path": "UMS Navigation > CFPE > Enrollment"
+                    },
+                    {
+                        "id": "CFPE.3",
+                        "name": "Program Schedule",
+                        "path": "UMS Navigation > CFPE > Schedule"
+                    },
+                    {
+                        "id": "CFPE.4",
+                        "name": "Completion Certificate",
+                        "path": "UMS Navigation > CFPE > Certificate"
+                    },
+                    {
+                        "id": "CFPE.5",
+                        "name": "Skill Assessment",
+                        "path": "UMS Navigation > CFPE > Assessment"
+                    }
+                ]
+            },
+            "service_4_COP": {
+                "id": "COP",
+                "name": "Change of Program",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "change program",
+                    "program switch",
+                    "major change",
+                    "specialization change"
+                ],
+                "category": "Academic Services",
+                "type": "academic",
+                "level_3_items": [
+                    {
+                        "id": "COP.1",
+                        "name": "Program Change Request",
+                        "path": "UMS Navigation > COP > Program Change Request"
+                    },
+                    {
+                        "id": "COP.2",
+                        "name": "Eligibility Check",
+                        "path": "UMS Navigation > COP > Eligibility"
+                    },
+                    {
+                        "id": "COP.3",
+                        "name": "Available Programs List",
+                        "path": "UMS Navigation > COP > Available Programs"
+                    },
+                    {
+                        "id": "COP.4",
+                        "name": "Submit Application",
+                        "path": "UMS Navigation > COP > Submit Application"
+                    },
+                    {
+                        "id": "COP.5",
+                        "name": "Track Request Status",
+                        "path": "UMS Navigation > COP > Status Tracking"
+                    }
+                ]
+            },
+            "service_5_EXAM": {
+                "id": "EXAM",
+                "name": "Examination System",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "exam",
+                    "examination",
+                    "test",
+                    "result",
+                    "grade"
+                ],
+                "category": "Academic Services",
+                "type": "academic",
+                "level_3_items": [
+                    {
+                        "id": "EXAM.1",
+                        "name": "Academic Result",
+                        "path": "UMS Navigation > EXAM > Academic Result"
+                    },
+                    {
+                        "id": "EXAM.2",
+                        "name": "Examination Attendance",
+                        "path": "UMS Navigation > EXAM > Attendance"
+                    },
+                    {
+                        "id": "EXAM.3",
+                        "name": "Examination Date Sheet",
+                        "path": "UMS Navigation > EXAM > Date Sheet"
+                    },
+                    {
+                        "id": "EXAM.4",
+                        "name": "Application for Academic Certificate",
+                        "path": "UMS Navigation > EXAM > Certificate Application"
+                    },
+                    {
+                        "id": "EXAM.5",
+                        "name": "Application for Provisional Transcript",
+                        "path": "UMS Navigation > EXAM > Provisional Transcript"
+                    },
+                    {
+                        "id": "EXAM.6",
+                        "name": "Backlog/Summer Term Course Registration",
+                        "path": "UMS Navigation > EXAM > Backlog Registration"
+                    },
+                    {
+                        "id": "EXAM.7",
+                        "name": "Registration for ReAppear",
+                        "path": "UMS Navigation > EXAM > ReAppear Registration"
+                    },
+                    {
+                        "id": "EXAM.8",
+                        "name": "Registration for Re-Evaluation",
+                        "path": "UMS Navigation > EXAM > Re-Evaluation Registration"
+                    },
+                    {
+                        "id": "EXAM.9",
+                        "name": "OMR Sheet Scrutiny",
+                        "path": "UMS Navigation > EXAM > OMR Scrutiny"
+                    },
+                    {
+                        "id": "EXAM.10",
+                        "name": "Faculty Feedback",
+                        "path": "UMS Navigation > EXAM > Faculty Feedback"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "part": 2,
+        "total_parts": 4,
+        "services_in_part": 5,
+        "ums_navigation": {
+            "service_6_FEEDBACK": {
+                "id": "FEEDBACK",
+                "name": "Feedback and Surveys",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "feedback",
+                    "survey",
+                    "opinion",
+                    "evaluation"
+                ],
+                "category": "System Management",
+                "type": "system_link",
+                "level_3_items": [
+                    {
+                        "id": "FB.1",
+                        "name": "Faculty Feedback",
+                        "path": "UMS Navigation > Feedback > Faculty Feedback"
+                    },
+                    {
+                        "id": "FB.2",
+                        "name": "Program Feedback",
+                        "path": "UMS Navigation > Feedback > Program Feedback"
+                    },
+                    {
+                        "id": "FB.3",
+                        "name": "Course Outcome Feedback",
+                        "path": "UMS Navigation > Feedback > Course Outcome"
+                    },
+                    {
+                        "id": "FB.4",
+                        "name": "Grievances Description",
+                        "path": "UMS Navigation > Feedback > Grievances"
+                    },
+                    {
+                        "id": "FB.5",
+                        "name": "Guest Lecture Feedback",
+                        "path": "UMS Navigation > Feedback > Guest Lecture"
+                    },
+                    {
+                        "id": "FB.6",
+                        "name": "Student Exit Survey",
+                        "path": "UMS Navigation > Feedback > Exit Survey"
+                    }
+                ]
+            },
+            "service_7_FMS": {
+                "id": "FMS",
+                "name": "Finance Management System (FMS)",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "finance",
+                    "fee",
+                    "payment",
+                    "bill",
+                    "dues"
+                ],
+                "category": "Financial Services",
+                "type": "financial",
+                "level_3_items": [
+                    {
+                        "id": "FMS.1",
+                        "name": "Fee Dashboard",
+                        "path": "UMS Navigation > FMS > Fee Dashboard"
+                    },
+                    {
+                        "id": "FMS.2",
+                        "name": "View Fee Status",
+                        "path": "UMS Navigation > FMS > Fee Status"
+                    },
+                    {
+                        "id": "FMS.3",
+                        "name": "View Fee Receipts",
+                        "path": "UMS Navigation > FMS > Fee Receipts"
+                    },
+                    {
+                        "id": "FMS.4",
+                        "name": "Fee Payment Schedule",
+                        "path": "UMS Navigation > FMS > Payment Schedule"
+                    },
+                    {
+                        "id": "FMS.5",
+                        "name": "Apply Fee Related Certificates",
+                        "path": "UMS Navigation > FMS > Certificates"
+                    },
+                    {
+                        "id": "FMS.6",
+                        "name": "Bank Loan Document Submission",
+                        "path": "UMS Navigation > FMS > Loan Documents"
+                    },
+                    {
+                        "id": "FMS.7",
+                        "name": "Confirmation of Fee Deposited",
+                        "path": "UMS Navigation > FMS > Confirmation"
+                    }
+                ]
+            },
+            "service_8_HEALTH": {
+                "id": "HEALTH",
+                "name": "Health Services",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "health",
+                    "medical",
+                    "doctor",
+                    "appointment",
+                    "wellness"
+                ],
+                "category": "Student Services",
+                "type": "services",
+                "level_3_items": [
+                    {
+                        "id": "HS.1",
+                        "name": "Doctor Appointment",
+                        "path": "UMS Navigation > Health > Doctor Appointment"
+                    },
+                    {
+                        "id": "HS.2",
+                        "name": "Counseling Appointment",
+                        "path": "UMS Navigation > Health > Counseling Appointment"
+                    },
+                    {
+                        "id": "HS.3",
+                        "name": "Medical Records",
+                        "path": "UMS Navigation > Health > Medical Records"
+                    },
+                    {
+                        "id": "HS.4",
+                        "name": "Health Services Available",
+                        "path": "UMS Navigation > Health > Services"
+                    },
+                    {
+                        "id": "HS.5",
+                        "name": "Vaccination Records",
+                        "path": "UMS Navigation > Health > Vaccination"
+                    }
+                ]
+            },
+            "service_9_ISS": {
+                "id": "ISS",
+                "name": "International Student Services",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "international",
+                    "visa",
+                    "FRRO",
+                    "foreign student"
+                ],
+                "category": "Student Services",
+                "type": "services",
+                "level_3_items": [
+                    {
+                        "id": "ISS.1",
+                        "name": "Visa Support Documents",
+                        "path": "UMS Navigation > ISS > Visa Documents"
+                    },
+                    {
+                        "id": "ISS.2",
+                        "name": "FRRO Appointment Booking",
+                        "path": "UMS Navigation > ISS > FRRO Appointment"
+                    },
+                    {
+                        "id": "ISS.3",
+                        "name": "Reporting Requirements",
+                        "path": "UMS Navigation > ISS > Reporting"
+                    },
+                    {
+                        "id": "ISS.4",
+                        "name": "Visa Extension Support",
+                        "path": "UMS Navigation > ISS > Visa Extension"
+                    },
+                    {
+                        "id": "ISS.5",
+                        "name": "International Student Resources",
+                        "path": "UMS Navigation > ISS > Resources"
+                    }
+                ]
+            },
+            "service_10_LMS": {
+                "id": "LMS",
+                "name": "Learning Management System (LMS)",
+                "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+                "keywords": [
+                    "learning",
+                    "course",
+                    "e-learning",
+                    "online",
+                    "class"
+                ],
+                "category": "Academic Services",
+                "type": "academic",
+                "level_3_items": [
+                    {
+                        "id": "LMS.1",
+                        "name": "Course Enrollment",
+                        "path": "UMS Navigation > LMS > Course Enrollment"
+                    },
+                    {
+                        "id": "LMS.2",
+                        "name": "Course Content",
+                        "path": "UMS Navigation > LMS > Course Content"
+                    },
+                    {
+                        "id": "LMS.3",
+                        "name": "Assignments Download",
+                        "path": "UMS Navigation > LMS > Assignments"
+                    },
+                    {
+                        "id": "LMS.4",
+                        "name": "Assignment Upload",
+                        "path": "UMS Navigation > LMS > Submit Assignment"
+                    },
+                    {
+                        "id": "LMS.5",
+                        "name": "Class Schedule",
+                        "path": "UMS Navigation > LMS > Schedule"
+                    },
+                    {
+                        "id": "LMS.6",
+                        "name": "MOOC Certification",
+                        "path": "UMS Navigation > LMS > MOOC"
+                    },
+                    {
+                        "id": "LMS.7",
+                        "name": "Cohort Selection",
+                        "path": "UMS Navigation > LMS > Cohorts"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "part": 3,
+        "services": 4,
+        "service_12_PROFILE": {
+            "id": "PROFILE",
+            "name": "My Profile",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "profile",
+                "personal info",
+                "virtual ID",
+                "student details"
+            ],
+            "category": "User Profile",
+            "level_3_items": [
+                {
+                    "id": "PROF.1",
+                    "name": "Profile Update",
+                    "keywords": [
+                        "update",
+                        "edit",
+                        "personal details"
+                    ]
+                },
+                {
+                    "id": "PROF.2",
+                    "name": "My Virtual ID Card",
+                    "keywords": [
+                        "virtual ID",
+                        "ID card",
+                        "digital ID"
+                    ]
+                },
+                {
+                    "id": "PROF.3",
+                    "name": "Change Password",
+                    "keywords": [
+                        "password",
+                        "security",
+                        "change"
+                    ]
+                },
+                {
+                    "id": "PROF.4",
+                    "name": "Personal Information",
+                    "keywords": [
+                        "personal info",
+                        "address",
+                        "contact"
+                    ]
+                },
+                {
+                    "id": "PROF.5",
+                    "name": "Academic Information",
+                    "keywords": [
+                        "academic",
+                        "program",
+                        "semester"
+                    ]
+                }
+            ]
+        },
+        "service_13_PLACEMENT": {
+            "id": "PLACEMENT",
+            "name": "Placement Services",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "placement",
+                "job",
+                "internship",
+                "recruitment",
+                "career"
+            ],
+            "category": "Student Services",
+            "level_3_items": [
+                {
+                    "id": "PLAC.1",
+                    "name": "Career Services Registration",
+                    "keywords": [
+                        "registration",
+                        "enrollment"
+                    ]
+                },
+                {
+                    "id": "PLAC.2",
+                    "name": "Placement Portal Access",
+                    "keywords": [
+                        "portal",
+                        "job portal",
+                        "listings"
+                    ]
+                },
+                {
+                    "id": "PLAC.3",
+                    "name": "Internship Applications",
+                    "keywords": [
+                        "internship",
+                        "application"
+                    ]
+                },
+                {
+                    "id": "PLAC.4",
+                    "name": "Internship Attendance",
+                    "keywords": [
+                        "attendance",
+                        "tracking"
+                    ]
+                },
+                {
+                    "id": "PLAC.5",
+                    "name": "O/T/Internship Document Repository",
+                    "keywords": [
+                        "documents",
+                        "repository"
+                    ]
+                },
+                {
+                    "id": "PLAC.6",
+                    "name": "Internship Recommendation Letter",
+                    "keywords": [
+                        "recommendation",
+                        "letter"
+                    ]
+                },
+                {
+                    "id": "PLAC.7",
+                    "name": "Placement Document Repository",
+                    "keywords": [
+                        "placement docs",
+                        "records"
+                    ]
+                },
+                {
+                    "id": "PLAC.8",
+                    "name": "Special Academic Benefits",
+                    "keywords": [
+                        "benefits",
+                        "support"
+                    ]
+                },
+                {
+                    "id": "PLAC.9",
+                    "name": "Student Training and Placement Committee",
+                    "keywords": [
+                        "committee",
+                        "coordination"
+                    ]
+                },
+                {
+                    "id": "PLAC.10",
+                    "name": "Exit From Career Services",
+                    "keywords": [
+                        "exit",
+                        "withdrawal"
+                    ]
+                }
+            ]
+        },
+        "service_14_RMS": {
+            "id": "RMS",
+            "name": "Relationship Management System (RMS)",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "relationship",
+                "request",
+                "grievance",
+                "issue tracking"
+            ],
+            "category": "System Management",
+            "level_3_items": [
+                {
+                    "id": "RMS.1",
+                    "name": "Log Request",
+                    "keywords": [
+                        "log",
+                        "submit",
+                        "create request"
+                    ]
+                },
+                {
+                    "id": "RMS.2",
+                    "name": "View Request Status",
+                    "keywords": [
+                        "status",
+                        "track",
+                        "view"
+                    ]
+                },
+                {
+                    "id": "RMS.3",
+                    "name": "Request History",
+                    "keywords": [
+                        "history",
+                        "past requests"
+                    ]
+                },
+                {
+                    "id": "RMS.4",
+                    "name": "Request Categories",
+                    "keywords": [
+                        "categories",
+                        "types",
+                        "classification"
+                    ]
+                },
+                {
+                    "id": "RMS.5",
+                    "name": "Communication Log",
+                    "keywords": [
+                        "communication",
+                        "messages",
+                        "updates"
+                    ]
+                }
+            ]
+        },
+        "service_15_RD": {
+            "id": "RD",
+            "name": "Research and Development",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "research",
+                "development",
+                "Ph.D",
+                "scholar",
+                "publication"
+            ],
+            "category": "Academic Services",
+            "level_3_items": [
+                {
+                    "id": "RD.1",
+                    "name": "Ph.D. Freshmen Induction",
+                    "keywords": [
+                        "induction",
+                        "orientation",
+                        "Ph.D"
+                    ]
+                },
+                {
+                    "id": "RD.2",
+                    "name": "Ph.D. Discipline Preference",
+                    "keywords": [
+                        "discipline",
+                        "specialization"
+                    ]
+                },
+                {
+                    "id": "RD.3",
+                    "name": "Ph.D. Candidacy Letter",
+                    "keywords": [
+                        "candidacy",
+                        "confirmation",
+                        "letter"
+                    ]
+                },
+                {
+                    "id": "RD.4",
+                    "name": "Ph.D. Evaluation",
+                    "keywords": [
+                        "evaluation",
+                        "assessment",
+                        "review"
+                    ]
+                },
+                {
+                    "id": "RD.5",
+                    "name": "Pre-submission Registration",
+                    "keywords": [
+                        "pre-submission",
+                        "registration"
+                    ]
+                },
+                {
+                    "id": "RD.6",
+                    "name": "Research Achievements Report",
+                    "keywords": [
+                        "achievements",
+                        "report",
+                        "progress"
+                    ]
+                },
+                {
+                    "id": "RD.7",
+                    "name": "IPR Idea Request",
+                    "keywords": [
+                        "IPR",
+                        "intellectual property",
+                        "patent"
+                    ]
+                },
+                {
+                    "id": "RD.8",
+                    "name": "International Research Program",
+                    "keywords": [
+                        "international",
+                        "collaboration"
+                    ]
+                },
+                {
+                    "id": "RD.9",
+                    "name": "Apply for Duty Leave & PVR",
+                    "keywords": [
+                        "duty leave",
+                        "leave",
+                        "PVR"
+                    ]
+                },
+                {
+                    "id": "RD.10",
+                    "name": "Research Scholar Guidelines",
+                    "keywords": [
+                        "guidelines",
+                        "rules",
+                        "policies"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "part": 4,
+        "services": 5,
+        "service_16_RES": {
+            "id": "RES",
+            "name": "Residential Services",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "residential",
+                "hostel",
+                "accommodation",
+                "on-campus living"
+            ],
+            "category": "Facilities",
+            "level_3_items": [
+                {
+                    "id": "RES.1",
+                    "name": "Hostel Guidelines",
+                    "keywords": [
+                        "guidelines",
+                        "rules",
+                        "policies"
+                    ]
+                },
+                {
+                    "id": "RES.2",
+                    "name": "Hostel Leave Application",
+                    "path": "UMS Navigation > Residential Services > Leave Application > Apply Leave",
+                    "keywords": [
+                        "leave",
+                        "outpass",
+                        "permission",
+                        "hospital leave"
+                    ]
+                },
+                {
+                    "id": "RES.3",
+                    "name": "Hostel Guest Room Booking",
+                    "keywords": [
+                        "guest room",
+                        "booking",
+                        "reservation"
+                    ]
+                },
+                {
+                    "id": "RES.4",
+                    "name": "Hostel Cloak Room Application",
+                    "keywords": [
+                        "cloak room",
+                        "storage"
+                    ]
+                },
+                {
+                    "id": "RES.5",
+                    "name": "Hostel Mail Acknowledgement",
+                    "keywords": [
+                        "mail",
+                        "parcel",
+                        "acknowledgement"
+                    ]
+                },
+                {
+                    "id": "RES.6",
+                    "name": "Hostel Confiscation Item Acknowledgement",
+                    "keywords": [
+                        "confiscation",
+                        "acknowledgement"
+                    ]
+                },
+                {
+                    "id": "RES.7",
+                    "name": "Electricity Consumption View",
+                    "keywords": [
+                        "electricity",
+                        "consumption",
+                        "bill"
+                    ]
+                },
+                {
+                    "id": "RES.8",
+                    "name": "House Keeping Rating",
+                    "keywords": [
+                        "housekeeping",
+                        "rating",
+                        "feedback"
+                    ]
+                },
+                {
+                    "id": "RES.9",
+                    "name": "Resident Details (Day Scholars)",
+                    "keywords": [
+                        "day scholar",
+                        "details",
+                        "resident"
+                    ]
+                },
+                {
+                    "id": "RES.10",
+                    "name": "Extended Time Request (Library)",
+                    "keywords": [
+                        "extended time",
+                        "library",
+                        "access"
+                    ]
+                },
+                {
+                    "id": "RES.11",
+                    "name": "Joy of Giving",
+                    "keywords": [
+                        "charity",
+                        "donation",
+                        "contribution"
+                    ]
+                }
+            ]
+        },
+        "service_17_SMS": {
+            "id": "SMS",
+            "name": "Scholarship Management System (SMS)",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "scholarship",
+                "financial aid",
+                "grant",
+                "sponsorship"
+            ],
+            "category": "Financial Services",
+            "level_3_items": [
+                {
+                    "id": "SMS.1",
+                    "name": "Scholarship Award Request",
+                    "keywords": [
+                        "award",
+                        "request",
+                        "application"
+                    ]
+                },
+                {
+                    "id": "SMS.2",
+                    "name": "Scholarship Continuation Request",
+                    "keywords": [
+                        "continuation",
+                        "renewal"
+                    ]
+                },
+                {
+                    "id": "SMS.3",
+                    "name": "Apply for Outer Agency Scholarship",
+                    "keywords": [
+                        "outer agency",
+                        "external scholarship"
+                    ]
+                },
+                {
+                    "id": "SMS.4",
+                    "name": "Scholarship Policies",
+                    "keywords": [
+                        "policies",
+                        "guidelines",
+                        "rules"
+                    ]
+                },
+                {
+                    "id": "SMS.5",
+                    "name": "Scholarship Letter",
+                    "keywords": [
+                        "letter",
+                        "award letter",
+                        "confirmation"
+                    ]
+                },
+                {
+                    "id": "SMS.6",
+                    "name": "Camp Registration",
+                    "keywords": [
+                        "camp",
+                        "training",
+                        "workshop"
+                    ]
+                },
+                {
+                    "id": "SMS.7",
+                    "name": "Participation & Achievements",
+                    "keywords": [
+                        "achievements",
+                        "participation",
+                        "records"
+                    ]
+                }
+            ]
+        },
+        "service_18_SS": {
+            "id": "SS",
+            "name": "Security and Safety",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "security",
+                "safety",
+                "campus security",
+                "emergency"
+            ],
+            "category": "Facilities",
+            "level_3_items": [
+                {
+                    "id": "SS.1",
+                    "name": "Campus Security Guidelines",
+                    "keywords": [
+                        "guidelines",
+                        "rules",
+                        "protocols"
+                    ]
+                },
+                {
+                    "id": "SS.2",
+                    "name": "Emergency Contacts",
+                    "keywords": [
+                        "emergency",
+                        "contact",
+                        "hotline"
+                    ]
+                },
+                {
+                    "id": "SS.3",
+                    "name": "Security Incident Reporting",
+                    "keywords": [
+                        "incident",
+                        "report",
+                        "complaint"
+                    ]
+                },
+                {
+                    "id": "SS.4",
+                    "name": "Campus Patrol Information",
+                    "keywords": [
+                        "patrol",
+                        "security personnel"
+                    ]
+                },
+                {
+                    "id": "SS.5",
+                    "name": "CCTV and Surveillance",
+                    "keywords": [
+                        "CCTV",
+                        "surveillance",
+                        "monitoring"
+                    ]
+                },
+                {
+                    "id": "SS.6",
+                    "name": "Safety Awareness Programs",
+                    "keywords": [
+                        "safety",
+                        "awareness",
+                        "training"
+                    ]
+                },
+                {
+                    "id": "SS.7",
+                    "name": "Lost Item Reporting",
+                    "keywords": [
+                        "lost",
+                        "missing",
+                        "report"
+                    ]
+                }
+            ]
+        },
+        "service_19_SWS": {
+            "id": "SWS",
+            "name": "Student Welfare System (SWS)",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "student welfare",
+                "leave",
+                "support",
+                "assistance"
+            ],
+            "category": "Student Services",
+            "level_3_items": [
+                {
+                    "id": "SWS.1",
+                    "name": "Leave Application",
+                    "keywords": [
+                        "leave",
+                        "sick leave",
+                        "casual leave"
+                    ]
+                },
+                {
+                    "id": "SWS.2",
+                    "name": "Emergency Leave Request",
+                    "keywords": [
+                        "emergency",
+                        "urgent leave"
+                    ]
+                },
+                {
+                    "id": "SWS.3",
+                    "name": "Leave History",
+                    "keywords": [
+                        "history",
+                        "past leave",
+                        "records"
+                    ]
+                },
+                {
+                    "id": "SWS.4",
+                    "name": "Welfare Programs",
+                    "keywords": [
+                        "welfare",
+                        "programs",
+                        "support"
+                    ]
+                },
+                {
+                    "id": "SWS.5",
+                    "name": "Student Support Services",
+                    "keywords": [
+                        "support",
+                        "assistance",
+                        "help"
+                    ]
+                },
+                {
+                    "id": "SWS.6",
+                    "name": "Counseling Services",
+                    "keywords": [
+                        "counseling",
+                        "mental health"
+                    ]
+                },
+                {
+                    "id": "SWS.7",
+                    "name": "Financial Assistance",
+                    "keywords": [
+                        "financial",
+                        "assistance",
+                        "emergency fund"
+                    ]
+                },
+                {
+                    "id": "SWS.8",
+                    "name": "Student Committee Participation",
+                    "keywords": [
+                        "committee",
+                        "participation",
+                        "involvement"
+                    ]
+                }
+            ]
+        },
+        "service_20_TMS": {
+            "id": "TMS",
+            "name": "Transport Management System (TMS)",
+            "url": "https://ums.lpu.in/lpuums/frmStudentResult.aspx#",
+            "keywords": [
+                "transport",
+                "bus",
+                "shuttle",
+                "commute",
+                "transportation"
+            ],
+            "category": "Facilities",
+            "level_3_items": [
+                {
+                    "id": "TMS.1",
+                    "name": "Bus Schedule",
+                    "keywords": [
+                        "schedule",
+                        "timing",
+                        "bus routes"
+                    ]
+                },
+                {
+                    "id": "TMS.2",
+                    "name": "Route Information",
+                    "keywords": [
+                        "routes",
+                        "stops",
+                        "destination"
+                    ]
+                },
+                {
+                    "id": "TMS.3",
+                    "name": "Transport Card Status",
+                    "keywords": [
+                        "transport card",
+                        "pass",
+                        "status"
+                    ]
+                },
+                {
+                    "id": "TMS.4",
+                    "name": "Bus Pass Renewal",
+                    "keywords": [
+                        "renewal",
+                        "pass",
+                        "extension"
+                    ]
+                },
+                {
+                    "id": "TMS.5",
+                    "name": "Travel Complaints",
+                    "keywords": [
+                        "complaint",
+                        "issue",
+                        "problem"
+                    ]
+                },
+                {
+                    "id": "TMS.6",
+                    "name": "Lost and Found Items",
+                    "keywords": [
+                        "lost",
+                        "found",
+                        "items",
+                        "recovery"
+                    ]
+                },
+                {
+                    "id": "TMS.7",
+                    "name": "Transport Feedback",
+                    "keywords": [
+                        "feedback",
+                        "suggestion",
+                        "opinion"
+                    ]
+                },
+                {
+                    "id": "TMS.8",
+                    "name": "Special Transport Request",
+                    "keywords": [
+                        "special request",
+                        "charter",
+                        "arrangement"
+                    ]
+                }
+            ]
+        },
+        "summary": {
+            "total_ums_navigation_services": 20,
+            "total_level_3_items": 155,
+            "services_covered": {
+                "part_1": [
+                    "ARMS",
+                    "CMS",
+                    "CFPE",
+                    "COP",
+                    "EXAM"
+                ],
+                "part_2": [
+                    "FEEDBACK",
+                    "FMS",
+                    "HEALTH",
+                    "ISS",
+                    "LMS"
+                ],
+                "part_3": [
+                    "LIB",
+                    "PROFILE",
+                    "PLACEMENT",
+                    "RMS",
+                    "RD"
+                ],
+                "part_4": [
+                    "RES",
+                    "SMS",
+                    "SS",
+                    "SWS",
+                    "TMS"
+                ]
+            },
+            "status": "100% COMPLETE",
+            "rag_training_ready": true
+        }
+    }
+]

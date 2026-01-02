@@ -43,7 +43,8 @@ def get_doc_type(file_path):
         "leave": "leave_policy",
         "facilities": "facility",
         "transport": "transport",
-        "users": "user_data"
+        "users": "user_data",
+        "navigation": "navigation"
     }
     
     return keyword_map.get(parent_dir.lower(), "general")
